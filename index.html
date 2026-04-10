@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -200,15 +200,15 @@
         { id: 'Stage 04 (Express 24h)', ocupacao: 85, paletes: 25, status: 'Atenção', color: 'bg-amber-400' },
       ],
       docas: [
-        { id: 'Doca 01', veiculo: 'Camião Toco', placa: 'ABC-1234', rota: 'Rota Norte', progresso: 85, status: 'A Carregar' },
+        { id: 'Doca 01', veiculo: 'Caminhão Toco', placa: 'ABC-1234', rota: 'Rota Norte', progresso: 85, status: 'A Carregar' },
         { id: 'Doca 02', veiculo: 'Carreta 3 Eixos', placa: 'XYZ-9876', rota: 'Hiper Centro', progresso: 100, status: 'Pronto a Sair' },
         { id: 'Doca 03', veiculo: '-', placa: '-', rota: '-', progresso: 0, status: 'Livre' },
-        { id: 'Doca 04', veiculo: 'Camião Baú', placa: 'DEF-5678', rota: 'Rota Sul', progresso: 15, status: 'A Iniciar' },
+        { id: 'Doca 04', veiculo: 'Caminhão Baú', placa: 'DEF-5678', rota: 'Rota Sul', progresso: 15, status: 'A Iniciar' },
       ],
       veiculosCarregados: [
-        { loja: 'Loja 12 - Centro', veiculo: 'Camião (XYZ-9876)', paletes: 28, hora: '16:15', status: 'Aguardar NFe', statusColor: 'text-amber-600 bg-amber-50 border-amber-200' },
-        { loja: 'Loja 05 - Bairro', veiculo: 'Carrinha (JKL-3456)', paletes: 12, hora: '15:30', status: 'Em Trânsito', statusColor: 'text-blue-700 bg-blue-50 border-blue-200' },
-        { loja: 'Loja 08 - Shopping', veiculo: 'Camião (MNO-7890)', paletes: 24, hora: '14:45', status: 'Em Trânsito', statusColor: 'text-blue-700 bg-blue-50 border-blue-200' },
+        { loja: 'Loja 12 - Centro', veiculo: 'Caminhão (XYZ-9876)', paletes: 28, hora: '16:15', status: 'Aguardar NFe', statusColor: 'text-amber-600 bg-amber-50 border-amber-200' },
+        { loja: 'Loja 05 - Bairro', veiculo: 'Van (JKL-3456)', paletes: 12, hora: '15:30', status: 'Em Trânsito', statusColor: 'text-blue-700 bg-blue-50 border-blue-200' },
+        { loja: 'Loja 08 - Shopping', veiculo: 'Caminhão (MNO-7890)', paletes: 24, hora: '14:45', status: 'Em Trânsito', statusColor: 'text-blue-700 bg-blue-50 border-blue-200' },
         { loja: 'Loja 02 - Express', veiculo: 'VUC (PQR-1234)', paletes: 8, hora: '16:40', status: 'Liberado Portaria', statusColor: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
       ]
     };
@@ -412,14 +412,15 @@
 
     function renderVisaoGeral() {
       const maxCargas = Math.max(recebimentoData.cargas.agendadas, 1);
+      const baseEsperadas = recebimentoData.cargas.agendadas - recebimentoData.cargas.atrasadas;
       return `
         <div class="fade-in">
           <div class="mb-6">
-            <h2 class="text-lg font-bold text-slate-800">Termómetro da Operação</h2>
+            <h2 class="text-lg font-bold text-slate-800">Termômetro da Operação</h2>
             <p class="text-sm text-slate-500">Resumo consolidado em tempo real das frentes operacionais do CD.</p>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${ThermometerCard({ title: 'Recebimento', subtitle: 'Cargas liberadas', value: recebimentoData.cargas.conferidas, unit: 'cargas', percentage: Math.round((recebimentoData.cargas.conferidas / recebimentoData.cargas.agendadas) * 100), theme: 'blue', trend: 'up', trendValue: '+5% vs ontem' })}
+            ${ThermometerCard({ title: 'Recebimento', subtitle: 'Cargas liberadas', value: recebimentoData.cargas.conferidas, unit: 'cargas', percentage: Math.round((recebimentoData.cargas.conferidas / baseEsperadas) * 100), theme: 'blue', trend: 'up', trendValue: '+5% vs ontem' })}
             ${ThermometerCard({ title: 'Separação', subtitle: 'Volume Concluído', value: '11.4k', unit: 'cx', percentage: 72, theme: 'purple', trend: 'down', trendValue: '-3% vs ontem' })}
             ${ThermometerCard({ title: 'Expedição', subtitle: 'Paletes Carregados', value: expedicaoData.kpis.paletesCarregados, unit: 'paletes', percentage: 82, theme: 'amber', trend: 'up', trendValue: '+15% vs ontem' })}
             ${ThermometerCard({ title: 'Produtividade', subtitle: 'Tarefas Concluídas', value: '4.8k', unit: 'tarefas', percentage: 85, theme: 'indigo', trend: 'none', trendValue: 'de 5.6k gerado' })}
@@ -437,23 +438,33 @@
               <div class="flex items-end justify-around h-48 px-4 gap-4">
                 <div class="flex flex-col justify-end items-center w-full h-full group">
                   <span class="text-3xl font-bold text-slate-700 mb-3">${recebimentoData.cargas.agendadas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-slate-200 rounded-t-xl transition-all duration-1000 border-x border-t border-slate-300/50 shadow-inner" style="height: ${(recebimentoData.cargas.agendadas / maxCargas) * 100}%;"></div>
+                  <div class="w-12 md:w-20 lg:w-24 bg-slate-200 rounded-t-xl transition-all duration-1000 border-x border-t border-slate-300/50 shadow-inner flex items-end justify-center pb-2" style="height: ${(recebimentoData.cargas.agendadas / maxCargas) * 100}%;">
+                    <span class="text-[10px] md:text-xs font-bold text-slate-500">100%</span>
+                  </div>
                 </div>
                 <div class="flex flex-col justify-end items-center w-full h-full group">
                   <span class="text-3xl font-bold text-red-600 mb-3">${recebimentoData.cargas.atrasadas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-red-400 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-red-500/30" style="height: ${(recebimentoData.cargas.atrasadas / maxCargas) * 100}%;"></div>
+                  <div class="w-12 md:w-20 lg:w-24 bg-red-400 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-red-500/30 flex items-end justify-center pb-2" style="height: ${(recebimentoData.cargas.atrasadas / maxCargas) * 100}%;">
+                    <span class="text-[10px] md:text-xs font-bold text-white">${Math.round((recebimentoData.cargas.atrasadas / recebimentoData.cargas.agendadas) * 100)}%</span>
+                  </div>
                 </div>
                 <div class="flex flex-col justify-end items-center w-full h-full group">
                   <span class="text-3xl font-bold text-blue-700 mb-3">${recebimentoData.cargas.recebidas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-blue-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-blue-600/30" style="height: ${(recebimentoData.cargas.recebidas / maxCargas) * 100}%;"></div>
+                  <div class="w-12 md:w-20 lg:w-24 bg-blue-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-blue-600/30 flex items-end justify-center pb-2" style="height: ${(recebimentoData.cargas.recebidas / maxCargas) * 100}%;">
+                    <span class="text-[10px] md:text-xs font-bold text-white">${Math.round((recebimentoData.cargas.recebidas / baseEsperadas) * 100)}%</span>
+                  </div>
                 </div>
                 <div class="flex flex-col justify-end items-center w-full h-full group relative">
                   <span class="text-3xl font-bold text-indigo-700 mb-3">${recebimentoData.cargas.conferidas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-indigo-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-indigo-600/30" style="height: ${(recebimentoData.cargas.conferidas / maxCargas) * 100}%;"></div>
+                  <div class="w-12 md:w-20 lg:w-24 bg-indigo-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-indigo-600/30 flex items-end justify-center pb-2" style="height: ${(recebimentoData.cargas.conferidas / maxCargas) * 100}%;">
+                    <span class="text-[10px] md:text-xs font-bold text-white">${Math.round((recebimentoData.cargas.conferidas / recebimentoData.cargas.recebidas) * 100)}%</span>
+                  </div>
                 </div>
                 <div class="flex flex-col justify-end items-center w-full h-full group">
                   <span class="text-3xl font-bold text-green-700 mb-3">${recebimentoData.cargas.armazenadas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-green-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-green-600/30" style="height: ${(recebimentoData.cargas.armazenadas / maxCargas) * 100}%;"></div>
+                  <div class="w-12 md:w-20 lg:w-24 bg-green-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-green-600/30 flex items-end justify-center pb-2" style="height: ${(recebimentoData.cargas.armazenadas / maxCargas) * 100}%;">
+                    <span class="text-[10px] md:text-xs font-bold text-white">${Math.round((recebimentoData.cargas.armazenadas / recebimentoData.cargas.conferidas) * 100)}%</span>
+                  </div>
                 </div>
               </div>
               <div class="flex justify-around items-center px-4 mt-2 border-t-2 border-slate-100 pt-4 pb-2">
@@ -480,10 +491,12 @@
                   <div>
                     <div class="flex justify-between text-xs font-semibold mb-1">
                       <span class="text-slate-700">${onda.id}</span>
-                      <span class="${onda.progresso === 100 ? 'text-green-600' : 'text-slate-600'}">${onda.progresso}%</span>
                     </div>
-                    <div class="w-full bg-slate-100 rounded-full h-2">
-                      <div class="h-2 rounded-full transition-all duration-1000 ${onda.progresso === 100 ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${onda.progresso}%"></div>
+                    <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                      <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${onda.progresso === 100 ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${onda.progresso}%"></div>
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-[10px] font-bold ${onda.progresso > 50 ? 'text-white' : 'text-slate-600'}">${onda.progresso}%</span>
+                      </div>
                     </div>
                   </div>
                 `).join('')}
@@ -526,6 +539,7 @@
       const totalConferidas = recebimentoData.cargas.conferidas;
       const acuracidadePct = Math.round((recebimentoData.cargas.semDivergencia / totalConferidas) * 100);
       const faltaPct = 100 - acuracidadePct;
+      const baseEsperadas = recebimentoData.cargas.agendadas - recebimentoData.cargas.atrasadas;
       
       return `
         <div class="fade-in space-y-8">
@@ -586,11 +600,11 @@
                       <i data-lucide="truck" class="w-5 h-5"></i>
                     </div>
                     <div class="flex items-baseline justify-center gap-1 mt-4">
-                      <h4 class="text-4xl md:text-5xl font-black text-blue-800">${recebimentoData.cargas.recebidas}</h4>
-                      <span class="text-blue-600 text-xs md:text-sm font-bold">(${Math.round((recebimentoData.cargas.recebidas/recebimentoData.cargas.agendadas)*100)}%)</span>
+                      <h4 class="text-3xl md:text-4xl font-black text-blue-800">${recebimentoData.cargas.recebidas}</h4>
+                      <span class="text-blue-600 text-[10px] md:text-xs font-bold">(${Math.round((recebimentoData.cargas.recebidas/baseEsperadas)*100)}%)</span>
                     </div>
-                    <p class="text-blue-600 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">Recebidas</p>
-                    <p class="text-slate-400 text-[9px] font-medium mt-1">de ${recebimentoData.cargas.agendadas - recebimentoData.cargas.atrasadas - recebimentoData.cargas.noShow} esperadas</p>
+                    <p class="text-blue-600 text-[10px] md:text-[11px] font-bold uppercase tracking-widest mt-1">Recebidas</p>
+                    <p class="text-slate-400 text-[9px] font-medium mt-1">de ${baseEsperadas} esperadas</p>
                   </div>
 
                   <!-- Card 2: Conferidas -->
@@ -599,24 +613,23 @@
                       <i data-lucide="clipboard-check" class="w-5 h-5"></i>
                     </div>
                     <div class="flex items-baseline justify-center gap-1 mt-4">
-                      <h4 class="text-4xl md:text-5xl font-black text-indigo-800">${recebimentoData.cargas.conferidas}</h4>
-                      <span class="text-indigo-600 text-xs md:text-sm font-bold">(${Math.round((recebimentoData.cargas.conferidas/recebimentoData.cargas.agendadas)*100)}%)</span>
+                      <h4 class="text-3xl md:text-4xl font-black text-indigo-800">${recebimentoData.cargas.conferidas}</h4>
+                      <span class="text-indigo-600 text-[10px] md:text-xs font-bold">(${Math.round((recebimentoData.cargas.conferidas/recebimentoData.cargas.recebidas)*100)}%)</span>
                     </div>
-                    <p class="text-indigo-600 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">Conferidas</p>
+                    <p class="text-indigo-600 text-[10px] md:text-[11px] font-bold uppercase tracking-widest mt-1">Conferidas</p>
                     <p class="text-slate-400 text-[9px] font-medium mt-1">de ${recebimentoData.cargas.recebidas} recebidas</p>
                   </div>
 
                   <!-- Card 3: Armazenadas -->
-                  <div class="relative bg-white border-2 border-green-400 rounded-xl p-4 md:p-7 flex flex-col items-center flex-1 shadow-lg z-20 overflow-hidden transform scale-105 mb-1">
-                    <div class="absolute bottom-0 left-0 w-full h-2.5 bg-green-500"></div>
+                  <div class="relative bg-white border-2 border-green-200 rounded-xl p-4 md:p-6 flex flex-col items-center flex-1 shadow-sm mt-4 z-20">
                     <div class="absolute -top-5 left-1/2 -translate-x-1/2 bg-green-50 border-[3px] border-white rounded-full p-2 text-green-600 shadow-sm">
                       <i data-lucide="package-check" class="w-5 h-5"></i>
                     </div>
                     <div class="flex items-baseline justify-center gap-1 mt-3">
-                      <h4 class="text-4xl md:text-5xl font-black text-green-800">${recebimentoData.cargas.armazenadas}</h4>
-                      <span class="text-green-600 text-xs md:text-sm font-bold">(${Math.round((recebimentoData.cargas.armazenadas/recebimentoData.cargas.agendadas)*100)}%)</span>
+                      <h4 class="text-3xl md:text-4xl font-black text-green-800">${recebimentoData.cargas.armazenadas}</h4>
+                      <span class="text-green-600 text-[10px] md:text-xs font-bold">(${Math.round((recebimentoData.cargas.armazenadas/recebimentoData.cargas.conferidas)*100)}%)</span>
                     </div>
-                    <p class="text-green-600 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1">Armazenadas</p>
+                    <p class="text-green-600 text-[10px] md:text-[11px] font-bold uppercase tracking-widest mt-1">Armazenadas</p>
                     <p class="text-slate-400 text-[9px] font-medium mt-1">de ${recebimentoData.cargas.conferidas} conferidas</p>
                   </div>
 
@@ -775,8 +788,11 @@
                     <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
                   </div>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
-                  <div class="bg-amber-400 h-full rounded-full transition-all duration-1000" style="width: ${(recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100}%"></div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-amber-400" style="width: ${(recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100)}%</span>
+                  </div>
                 </div>
               </div>
               <!-- Item 2 -->
@@ -788,8 +804,11 @@
                     <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
                   </div>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
-                  <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: ${(recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100}%"></div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-blue-500" style="width: ${(recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100)}%</span>
+                  </div>
                 </div>
                 ${recebimentoData.paletes.emTransito > 30 ? '<div class="absolute -bottom-6 left-0 text-[10px] font-bold text-red-500 flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta de Estangamento de Pátio</div>' : ''}
               </div>
@@ -802,124 +821,16 @@
                     <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
                   </div>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
-                  <div class="bg-green-500 h-full rounded-full transition-all duration-1000" style="width: ${(recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100}%"></div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-green-500" style="width: ${(recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100)}%</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-        </div>
-      `;
-    }
-
-    function renderVisaoGeral() {
-      const maxCargas = Math.max(recebimentoData.cargas.agendadas, 1);
-      return `
-        <div class="fade-in">
-          <div class="mb-6">
-            <h2 class="text-lg font-bold text-slate-800">Termómetro da Operação</h2>
-            <p class="text-sm text-slate-500">Resumo consolidado em tempo real das frentes operacionais do CD.</p>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${ThermometerCard({ title: 'Recebimento', subtitle: 'Cargas liberadas', value: recebimentoData.cargas.conferidas, unit: 'cargas', percentage: Math.round((recebimentoData.cargas.conferidas / recebimentoData.cargas.agendadas) * 100), theme: 'blue', trend: 'up', trendValue: '+5% vs ontem' })}
-            ${ThermometerCard({ title: 'Separação', subtitle: 'Volume Concluído', value: '11.4k', unit: 'cx', percentage: 72, theme: 'purple', trend: 'down', trendValue: '-3% vs ontem' })}
-            ${ThermometerCard({ title: 'Expedição', subtitle: 'Paletes Carregados', value: expedicaoData.kpis.paletesCarregados, unit: 'paletes', percentage: 82, theme: 'amber', trend: 'up', trendValue: '+15% vs ontem' })}
-            ${ThermometerCard({ title: 'Produtividade', subtitle: 'Tarefas Concluídas', value: '4.8k', unit: 'tarefas', percentage: 85, theme: 'indigo', trend: 'none', trendValue: 'de 5.6k gerado' })}
-          </div>
-          
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col">
-            <div class="flex justify-between items-center mb-6">
-              <div>
-                <h3 class="font-bold text-slate-800">Fluxo de Agendamento</h3>
-                <p class="text-sm text-slate-500">Progressão em tempo real das cargas no dia.</p>
-              </div>
-              <button onclick="setMenu('recebimento')" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Ver Detalhes</button>
-            </div>
-            <div class="flex-1 mt-2">
-              <div class="flex items-end justify-around h-48 px-4 gap-4">
-                <div class="flex flex-col justify-end items-center w-full h-full group">
-                  <span class="text-3xl font-bold text-slate-700 mb-3">${recebimentoData.cargas.agendadas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-slate-200 rounded-t-xl transition-all duration-1000 border-x border-t border-slate-300/50 shadow-inner" style="height: ${(recebimentoData.cargas.agendadas / maxCargas) * 100}%;"></div>
-                </div>
-                <div class="flex flex-col justify-end items-center w-full h-full group">
-                  <span class="text-3xl font-bold text-red-600 mb-3">${recebimentoData.cargas.atrasadas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-red-400 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-red-500/30" style="height: ${(recebimentoData.cargas.atrasadas / maxCargas) * 100}%;"></div>
-                </div>
-                <div class="flex flex-col justify-end items-center w-full h-full group">
-                  <span class="text-3xl font-bold text-blue-700 mb-3">${recebimentoData.cargas.recebidas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-blue-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-blue-600/30" style="height: ${(recebimentoData.cargas.recebidas / maxCargas) * 100}%;"></div>
-                </div>
-                <div class="flex flex-col justify-end items-center w-full h-full group relative">
-                  <span class="text-3xl font-bold text-indigo-700 mb-3">${recebimentoData.cargas.conferidas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-indigo-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-indigo-600/30" style="height: ${(recebimentoData.cargas.conferidas / maxCargas) * 100}%;"></div>
-                </div>
-                <div class="flex flex-col justify-end items-center w-full h-full group">
-                  <span class="text-3xl font-bold text-green-700 mb-3">${recebimentoData.cargas.armazenadas}</span>
-                  <div class="w-12 md:w-20 lg:w-24 bg-green-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-green-600/30" style="height: ${(recebimentoData.cargas.armazenadas / maxCargas) * 100}%;"></div>
-                </div>
-              </div>
-              <div class="flex justify-around items-center px-4 mt-2 border-t-2 border-slate-100 pt-4 pb-2">
-                <span class="w-full text-center text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Agendadas</span>
-                <span class="w-full text-center text-[10px] md:text-xs font-bold text-red-600 uppercase tracking-wider">Atrasadas</span>
-                <span class="w-full text-center text-[10px] md:text-xs font-bold text-blue-600 uppercase tracking-wider">Recebidas</span>
-                <span class="w-full text-center text-[10px] md:text-xs font-bold text-indigo-600 uppercase tracking-wider">Conferidas</span>
-                <span class="w-full text-center text-[10px] md:text-xs font-bold text-green-600 uppercase tracking-wider">Armazenadas</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-              <div class="flex justify-between items-center mb-6">
-                <div>
-                  <h3 class="font-bold text-slate-800">Status das Linhas de Separação</h3>
-                  <p class="text-sm text-slate-500">Andamento das rotas para expedição.</p>
-                </div>
-                <button onclick="setMenu('separacao')" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Ver Detalhes</button>
-              </div>
-              <div class="flex-1 flex flex-col justify-center gap-4">
-                ${separacaoData.ondas.slice(0,3).map(onda => `
-                  <div>
-                    <div class="flex justify-between text-xs font-semibold mb-1">
-                      <span class="text-slate-700">${onda.id}</span>
-                      <span class="${onda.progresso === 100 ? 'text-green-600' : 'text-slate-600'}">${onda.progresso}%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-2">
-                      <div class="h-2 rounded-full transition-all duration-1000 ${onda.progresso === 100 ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${onda.progresso}%"></div>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-slate-800">Top Produtividade</h3>
-                <i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
-              </div>
-              <div class="space-y-4">
-                ${[...produtividadeTable].sort((a, b) => b.comparativo - a.comparativo).slice(0,3).map(op => `
-                  <div class="flex items-center justify-between border-b border-slate-50 pb-2 last:border-0 last:pb-0">
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shadow-inner">
-                        ${op.nome.split(' ').map(n=>n[0]).join('')}
-                      </div>
-                      <div>
-                        <p class="text-sm font-bold text-slate-700">${op.nome}</p>
-                        <p class="text-[10px] text-slate-500 uppercase">${op.funcao}</p>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <span class="block text-sm font-bold text-green-600">${op.caixasHora}</span>
-                      <span class="block text-[9px] text-slate-400">cx/h <span class="font-bold text-emerald-500 ml-1">+${op.comparativo}%</span></span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-              <button onclick="setMenu('equipe')" class="w-full mt-4 py-2 text-xs font-semibold text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">Ver Equipe Completa</button>
-            </div>
-          </div>
         </div>
       `;
     }
@@ -952,11 +863,13 @@
                       <span class="text-slate-700">${onda.id} <span class="text-slate-400 font-normal ml-2">(${onda.totalCx} caixas)</span></span>
                       <span class="flex items-center gap-3">
                         <span class="text-xs px-2 py-0.5 rounded-full ${onda.progresso === 100 ? 'bg-green-100 text-green-700' : onda.progresso > 0 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${onda.status}</span>
-                        <span class="w-10 text-right">${onda.progresso}%</span>
                       </span>
                     </div>
-                    <div class="w-full bg-slate-100 rounded-full h-3">
-                      <div class="h-3 rounded-full transition-all duration-1000 ${onda.progresso === 100 ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${onda.progresso}%"></div>
+                    <div class="w-full bg-slate-100 rounded-full h-5 relative overflow-hidden shadow-inner">
+                      <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${onda.progresso === 100 ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${onda.progresso}%"></div>
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-xs font-bold ${onda.progresso > 50 ? 'text-white' : 'text-slate-600'}">${onda.progresso}%</span>
+                      </div>
                     </div>
                   </div>
                 `).join('')}
@@ -1020,12 +933,15 @@
                       <span class="text-sm font-bold text-slate-700">${stage.id}</span>
                       <span class="text-sm font-bold text-slate-800">${stage.paletes} paletes</span>
                     </div>
-                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-1000 ${stage.color}" style="width: ${stage.ocupacao}%"></div>
+                    <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                      <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${stage.color}" style="width: ${stage.ocupacao}%"></div>
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-[10px] font-bold ${stage.ocupacao > 50 ? 'text-white' : 'text-slate-600'}">${stage.ocupacao}%</span>
+                      </div>
                     </div>
                     <div class="flex justify-between text-[10px] text-slate-500 font-medium uppercase tracking-wider">
                       <span class="${stage.ocupacao >= 90 ? 'text-red-500 font-bold' : ''}">${stage.status}</span>
-                      <span>${stage.ocupacao}% capacidade</span>
+                      <span>capacidade</span>
                     </div>
                   </div>
                 `).join('')}
@@ -1053,10 +969,12 @@
                         <p class="text-[10px] text-slate-500 truncate">Destino: ${doca.rota}</p>
                       </div>
                       <div class="flex items-center gap-2">
-                        <div class="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                          <div class="h-full rounded-full ${doca.progresso === 100 ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${doca.progresso}%"></div>
+                        <div class="flex-1 bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                          <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${doca.progresso === 100 ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${doca.progresso}%"></div>
+                          <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-[10px] font-bold ${doca.progresso > 50 ? 'text-white' : 'text-slate-600'}">${doca.progresso}%</span>
+                          </div>
                         </div>
-                        <span class="text-xs font-bold text-slate-700">${doca.progresso}%</span>
                       </div>
                     ` : `
                       <div class="flex flex-col items-center justify-center py-2">
@@ -1260,7 +1178,7 @@
                   return `
                   <div class="flex flex-col items-center flex-1 h-full justify-end group relative">
                     <div class="absolute -top-12 bg-slate-800 text-white text-xs py-1.5 px-3 rounded shadow-lg hidden group-hover:flex flex-col items-center z-10 whitespace-nowrap">
-                      <span class="font-bold">${item.qtd.toLocaleString('pt-PT')} un</span>
+                      <span class="font-bold">${item.qtd.toLocaleString('pt-BR')} un</span>
                       <span class="text-[10px] text-slate-300">Risco: ${item.vr}</span>
                     </div>
                     <div class="w-full rounded-t-md transition-all duration-500 ${item.color} opacity-85 group-hover:opacity-100 shadow-sm flex justify-center pt-2 overflow-hidden" style="height: ${(item.qtd / maxQtd) * 100}%; min-height: 14%;">
