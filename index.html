@@ -659,7 +659,75 @@
             ${ArmazenagemCard()}
           </div>
 
-          <!-- 3 - CARD GRANDE: ACURACIDADE DE RECEBIMENTO -->
+          <!-- 3 - STATUS FÍSICO DOS PALETES (LARGURA TOTAL) -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Status Físico dos Paletes Conferidos</h3>
+                <p class="text-sm text-slate-500">Fluxo logístico após a conferência inicial.</p>
+              </div>
+              <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
+                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mb-0.5">Total Conferidos</p>
+                <div class="flex items-baseline justify-center gap-1">
+                  <span class="text-3xl font-black text-indigo-700">${recebimentoData.paletes.conferidos}</span>
+                  <span class="text-xs font-bold text-indigo-500">PL</span>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+              <!-- Item 1 -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Aguardando na Doca</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-amber-500">${recebimentoData.paletes.naDoca}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-amber-400" style="width: ${(recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Item 2 -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Na Rua (Em Movimentação)</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-blue-600">${recebimentoData.paletes.emTransito}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-blue-500" style="width: ${(recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100)}%</span>
+                  </div>
+                </div>
+                ${recebimentoData.paletes.emTransito > 30 ? '<div class="absolute -bottom-6 left-0 text-[10px] font-bold text-red-500 flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta de Estangamento de Pátio</div>' : ''}
+              </div>
+              <!-- Item 3 -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Armazenados (Destino)</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-green-600">${recebimentoData.paletes.armazenados}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-green-500" style="width: ${(recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 - CARD GRANDE: ACURACIDADE DE RECEBIMENTO -->
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 flex flex-col">
             <div class="flex justify-between items-start mb-8">
                <div>
@@ -771,63 +839,6 @@
                    </div>
                  `).join('')}
                </div>
-            </div>
-          </div>
-
-          <!-- 4 - STATUS FÍSICO DOS PALETES (LARGURA TOTAL) -->
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-            <h3 class="font-bold text-xl text-slate-800 mb-1">Status Físico dos Paletes Conferidos</h3>
-            <p class="text-sm text-slate-500 mb-8">Fluxo logístico após a conferência inicial.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
-              <!-- Item 1 -->
-              <div class="flex flex-col">
-                <div class="flex justify-between mb-3 items-end">
-                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Aguardando na Doca</span>
-                  <div class="text-right">
-                    <span class="text-2xl font-black text-amber-500">${recebimentoData.paletes.naDoca}</span>
-                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
-                  </div>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
-                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-amber-400" style="width: ${(recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100}%"></div>
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100)}%</span>
-                  </div>
-                </div>
-              </div>
-              <!-- Item 2 -->
-              <div class="flex flex-col relative">
-                <div class="flex justify-between mb-3 items-end">
-                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Na Rua (Em Movimentação)</span>
-                  <div class="text-right">
-                    <span class="text-2xl font-black text-blue-600">${recebimentoData.paletes.emTransito}</span>
-                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
-                  </div>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
-                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-blue-500" style="width: ${(recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100}%"></div>
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100)}%</span>
-                  </div>
-                </div>
-                ${recebimentoData.paletes.emTransito > 30 ? '<div class="absolute -bottom-6 left-0 text-[10px] font-bold text-red-500 flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta de Estangamento de Pátio</div>' : ''}
-              </div>
-              <!-- Item 3 -->
-              <div class="flex flex-col">
-                <div class="flex justify-between mb-3 items-end">
-                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Armazenados (Destino)</span>
-                  <div class="text-right">
-                    <span class="text-2xl font-black text-green-600">${recebimentoData.paletes.armazenados}</span>
-                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
-                  </div>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
-                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-green-500" style="width: ${(recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100}%"></div>
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-[10px] font-bold ${((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100)}%</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
