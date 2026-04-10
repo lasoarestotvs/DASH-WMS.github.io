@@ -246,86 +246,6 @@
       `;
     }
 
-    function VolumeProgressCard({ title, icon, agendados, conferidos, unitText, formatK = false, theme = 'blue', targetLabel = 'agendados' }) {
-      const t = baseThemes[theme];
-      const valConferidos = formatK ? (conferidos / 1000).toFixed(1) + 'k' : conferidos;
-      const valAgendados = formatK ? (agendados / 1000).toFixed(1) + 'k' : agendados;
-      const percent = Math.round((conferidos / agendados) * 100);
-      const iconHtml = icon ? `<div class="p-2 rounded-lg ${t.bg} ${t.text}"><i data-lucide="${icon}" class="w-5 h-5"></i></div>` : '';
-
-      return `
-        <div class="bg-white p-4 rounded-xl border-l-4 shadow-sm flex flex-col justify-between ${t.border}">
-          <div class="flex justify-between items-start mb-2">
-            <h3 class="text-slate-500 text-sm font-semibold">${title}</h3>
-            ${iconHtml}
-          </div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-3xl font-bold text-slate-800">${valConferidos}</span>
-            <span class="text-slate-500 text-sm">${unitText}</span>
-          </div>
-          <div class="mt-2">
-            <div class="flex justify-between text-xs text-slate-500 mb-1">
-              <span>de ${valAgendados} ${targetLabel}</span>
-              <span class="font-bold ${t.text}">${percent}%</span>
-            </div>
-            <div class="w-full bg-slate-100 rounded-full h-1.5">
-              <div class="h-1.5 rounded-full ${t.bar}" style="width: ${percent}%"></div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function ThermometerCard({ title, subtitle, value, unit, percentage, trend, trendValue, theme = 'blue', inverseTrend = false }) {
-      const t = baseThemes[theme];
-      let thermoTheme = theme;
-      if (trend === 'up') {
-        thermoTheme = inverseTrend ? 'red' : 'green';
-      } else if (trend === 'down') {
-        thermoTheme = inverseTrend ? 'green' : 'red';
-      }
-      const thermoT = baseThemes[thermoTheme];
-      const safePct = Math.min(100, Math.max(0, percentage));
-      const trendIcon = trend === 'up' ? '<i data-lucide="trending-up" class="w-3.5 h-3.5"></i>' : trend === 'down' ? '<i data-lucide="trending-down" class="w-3.5 h-3.5"></i>' : `<span class="inline-block w-2 h-2 rounded-full ${t.bar}"></span>`;
-      const trendClass = thermoTheme === 'green' ? 'text-green-600' : thermoTheme === 'red' ? 'text-red-500' : 'text-slate-500';
-      const trendText = trendValue || `${percentage}% ${thermoTheme === 'red' ? 'nível crítico' : 'da meta'}`;
-
-      return `
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between relative overflow-hidden group">
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full opacity-[0.03] ${t.bar}"></div>
-          <div class="flex flex-col justify-between h-full z-10 w-3/4">
-            <div>
-              <h3 class="text-slate-700 text-sm font-bold mb-0.5">${title}</h3>
-              <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">${subtitle}</p>
-            </div>
-            <div class="mt-4 mb-1">
-              <span class="text-3xl font-black ${t.text}">${value}</span>
-              <span class="text-slate-500 text-sm ml-1 font-medium">${unit}</span>
-            </div>
-            <div class="flex items-center gap-1.5 text-xs font-semibold ${trendClass}">
-               ${trendIcon} ${trendText}
-            </div>
-          </div>
-          <div class="flex flex-col items-center justify-end h-28 w-12 pt-2 z-10">
-            <div class="w-3.5 flex-1 bg-slate-100 rounded-t-full relative shadow-inner border border-slate-200/50 flex flex-col justify-end overflow-hidden z-0">
-               <div class="absolute inset-0 flex flex-col justify-between py-1 opacity-20">
-                 <div class="w-full h-[1px] bg-slate-800"></div><div class="w-full h-[1px] bg-slate-800"></div>
-                 <div class="w-full h-[1px] bg-slate-800"></div><div class="w-full h-[1px] bg-slate-800"></div>
-               </div>
-               <div class="w-full transition-all duration-1000 relative ${thermoT.bar}" style="height: ${safePct}%">
-                 <div class="absolute top-0 right-0 w-1/2 h-full bg-white/20"></div>
-               </div>
-               <div class="absolute top-[20%] left-0 w-full border-t-2 border-slate-800/30 z-10"></div>
-            </div>
-            <div class="w-8 h-8 rounded-full shadow-md -mt-2 z-10 border-2 border-white flex items-center justify-center relative ${thermoT.bulb}">
-               <div class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-white/40 blur-[1px]"></div>
-               <div class="absolute -inset-1 rounded-full opacity-20 animate-pulse ${thermoT.bar}"></div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
     function UnifiedVolumeCard({ title, icon, dia, hora, formatK = false, theme = 'blue' }) {
       const t = baseThemes[theme];
       const formatVal = (val) => formatK ? (val / 1000).toFixed(1).replace('.0', '') + 'k' : val;
@@ -402,6 +322,56 @@
                   <span class="text-slate-400 text-[10px] font-medium">min/pl</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function ThermometerCard({ title, subtitle, value, unit, percentage, trend, trendValue, theme = 'blue', inverseTrend = false }) {
+      const t = baseThemes[theme];
+      let thermoTheme = theme;
+      if (trend === 'up') {
+        thermoTheme = inverseTrend ? 'red' : 'green';
+      } else if (trend === 'down') {
+        thermoTheme = inverseTrend ? 'green' : 'red';
+      }
+      const thermoT = baseThemes[thermoTheme];
+      const safePct = Math.min(100, Math.max(0, percentage));
+      const trendIcon = trend === 'up' ? '<i data-lucide="trending-up" class="w-3.5 h-3.5"></i>' : trend === 'down' ? '<i data-lucide="trending-down" class="w-3.5 h-3.5"></i>' : `<span class="inline-block w-2 h-2 rounded-full ${t.bar}"></span>`;
+      const trendClass = thermoTheme === 'green' ? 'text-green-600' : thermoTheme === 'red' ? 'text-red-500' : 'text-slate-500';
+      const trendText = trendValue || `${percentage}% ${thermoTheme === 'red' ? 'nível crítico' : 'da meta'}`;
+
+      return `
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between relative overflow-hidden group">
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full opacity-[0.03] ${t.bar}"></div>
+          <div class="flex flex-col justify-between h-full z-10 w-3/4">
+            <div>
+              <h3 class="text-slate-700 text-sm font-bold mb-0.5">${title}</h3>
+              <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">${subtitle}</p>
+            </div>
+            <div class="mt-4 mb-1">
+              <span class="text-3xl font-black ${t.text}">${value}</span>
+              <span class="text-slate-500 text-sm ml-1 font-medium">${unit}</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-xs font-semibold ${trendClass}">
+               ${trendIcon} ${trendText}
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-end h-28 w-12 pt-2 z-10">
+            <div class="w-3.5 flex-1 bg-slate-100 rounded-t-full relative shadow-inner border border-slate-200/50 flex flex-col justify-end overflow-hidden z-0">
+               <div class="absolute inset-0 flex flex-col justify-between py-1 opacity-20">
+                 <div class="w-full h-[1px] bg-slate-800"></div><div class="w-full h-[1px] bg-slate-800"></div>
+                 <div class="w-full h-[1px] bg-slate-800"></div><div class="w-full h-[1px] bg-slate-800"></div>
+               </div>
+               <div class="w-full transition-all duration-1000 relative ${thermoT.bar}" style="height: ${safePct}%">
+                 <div class="absolute top-0 right-0 w-1/2 h-full bg-white/20"></div>
+               </div>
+               <div class="absolute top-[20%] left-0 w-full border-t-2 border-slate-800/30 z-10"></div>
+            </div>
+            <div class="w-8 h-8 rounded-full shadow-md -mt-2 z-10 border-2 border-white flex items-center justify-center relative ${thermoT.bulb}">
+               <div class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-white/40 blur-[1px]"></div>
+               <div class="absolute -inset-1 rounded-full opacity-20 animate-pulse ${thermoT.bar}"></div>
             </div>
           </div>
         </div>
@@ -857,12 +827,245 @@
             </div>
             <button class="ml-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded shadow-sm transition-colors">Ver Sugestão de Remanejamento</button>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${KpiCard({ title: 'Lotes de Separação', value: '4.2k', unit: 'lotes', trend: 'up', trendValue: '81% de 5.2k gerados' })}
-            ${VolumeProgressCard({ title: 'Progresso em Itens', agendados: 84500, conferidos: 62300, unitText: 'itens', formatK: true, theme: 'indigo', targetLabel: 'a separar' })}
-            ${KpiCard({ title: 'Progresso em Volumes', value: '11.4k', unit: '/ 15.7k', trend: 'up', trendValue: '72% concluído' })}
-            ${KpiCard({ title: 'Taxa de Ruptura (Corte de Itens)', value: '0.8', unit: '%', trend: 'down', trendValue: '-0.2% vs ontem', alert: false })}
+          
+          <!-- 1 - Progresso Consolidado -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Progresso Consolidado</h3>
+                <p class="text-sm text-slate-500">Andamento geral das tarefas de picking do turno atual.</p>
+              </div>
+              <div class="bg-emerald-50 border border-emerald-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
+                <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mb-0.5">Média Geral</p>
+                <div class="flex items-baseline justify-center gap-1">
+                  <span class="text-4xl font-black text-emerald-700">76</span>
+                  <span class="text-xl font-bold text-emerald-500">%</span>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+              <!-- Item 1 -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Lotes de Separação</span>
+                    <span class="text-xs font-semibold text-slate-500">de 5.200 lotes</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-blue-600">4.212</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">LOTES</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-blue-500" style="width: 81%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-white">81%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Item 2 -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Itens (produtos)</span>
+                    <span class="text-xs font-semibold text-slate-500">de 84.500 itens</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-indigo-600">62.300</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">ITENS</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-indigo-500" style="width: 74%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-white">74%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Volumes (caixas)</span>
+                    <span class="text-xs font-semibold text-slate-500">de 15.700 cx</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-purple-600">11.400</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">CX</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-purple-500" style="width: 73%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-white">73%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <!-- 2 - Desempenho por Hora -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Desempenho por Hora</h3>
+                <p class="text-sm text-slate-500">Métricas de vazão média da última hora de operação.</p>
+              </div>
+              <div class="bg-blue-50 border border-blue-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
+                <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-0.5">Eficiência Hora</p>
+                <div class="flex items-baseline justify-center gap-1">
+                  <span class="text-4xl font-black text-blue-700">79</span>
+                  <span class="text-xl font-bold text-blue-500">%</span>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+              <!-- Item 1: Lotes/h -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Lotes por Hora</span>
+                    <span class="text-xs font-semibold text-slate-500">Vazão do turno</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-blue-600">125</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">LOTES/H</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-blue-500" style="width: 83%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-white">83%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Item 2: Itens/h -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Itens por Hora</span>
+                    <span class="text-xs font-semibold text-slate-500">Vazão do turno</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-indigo-600">2.100</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">ITENS/H</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-indigo-500" style="width: 75%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-white">75%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3: Volumes/h -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Volumes por Hora</span>
+                    <span class="text-xs font-semibold text-slate-500">Vazão do turno</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-purple-600">480</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">CX/H</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-purple-500" style="width: 80%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-white">80%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 - Estimativa de Conclusão (ETA) -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Estimativa para Finalização</h3>
+                <p class="text-sm text-slate-500">Projeção de tempo necessário para concluir o saldo pendente (Performance Atual).</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
+                <p class="text-[10px] text-amber-600 font-bold uppercase tracking-widest mb-0.5">Tempo Restante</p>
+                <div class="flex items-baseline justify-center gap-1">
+                  <span class="text-3xl font-black text-amber-700">07:54</span>
+                  <span class="text-xs font-bold text-amber-500">h:m</span>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+              <!-- Item 1: Saldo Lotes -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Pendente: Lotes</span>
+                    <span class="text-xs font-semibold text-slate-500">Vazão: 125/h</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-blue-600">988</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">LOTES</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full bg-blue-200" style="width: 100%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-blue-800">Conclusão em ~07h 54m</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Item 2: Saldo Itens -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Pendente: Itens</span>
+                    <span class="text-xs font-semibold text-slate-500">Vazão: 2.100/h</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-indigo-600">22.200</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">ITENS</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full bg-indigo-200" style="width: 100%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-indigo-800">Conclusão em ~10h 34m</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3: Saldo Volumes -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between mb-3 items-end">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Pendente: Volumes</span>
+                    <span class="text-xs font-semibold text-slate-500">Vazão: 480/h</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-purple-600">4.300</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">CAIXAS</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full bg-purple-200" style="width: 100%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold text-purple-800">Conclusão em ~08h 57m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            ${KpiCard({ title: 'Taxa de Ruptura (Corte de Itens)', value: '0.8', unit: '%', trend: 'down', trendValue: '-0.2% vs ontem', alert: false, theme: 'red' })}
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <h3 class="font-bold text-slate-800 mb-1">Progresso por Linha de Separação</h3>
