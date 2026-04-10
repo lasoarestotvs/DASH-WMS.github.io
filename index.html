@@ -24,6 +24,21 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
   </style>
 </head>
 <body class="flex h-screen bg-slate-50 overflow-hidden">
@@ -33,7 +48,7 @@
     <div class="p-6 border-b border-slate-800 flex items-center gap-3">
       <div class="w-8 h-8 bg-blue-500 rounded flex items-center justify-center font-bold text-white text-xl">W</div>
       <div>
-        <h1 class="text-white font-bold text-lg leading-tight">TOTVS WMS</h1>
+        <h1 class="text-white font-bold text-lg leading-tight">WMS Dashboards</h1>
         <p class="text-xs text-blue-400">Varejo Supermercados</p>
       </div>
     </div>
@@ -102,7 +117,7 @@
     };
 
     const recebimentoData = {
-      cargas: { agendadas: 45, recebidas: 38, conferidas: 32, armazenadas: 25, noShow: 7, comDivergencia: 8, semDivergencia: 24 },
+      cargas: { agendadas: 50, atrasadas: 7, recebidas: 38, conferidas: 32, armazenadas: 25, noShow: 5, comDivergencia: 8, semDivergencia: 24 },
       paletes: { conferidos: 450, naDoca: 120, armazenados: 290, emTransito: 40 },
       volumes: { itens: { agendados: 18500, conferidos: 15400 }, caixas: { agendados: 4500, conferidos: 3200 }, paletes: { agendados: 550, conferidos: 450 } }
     };
@@ -127,6 +142,25 @@
       { nome: 'Carlos Souza', funcao: 'Separador (FLV)', caixasHora: 140, status: 'Em Pausa', performance: 'Abaixo da Meta' },
       { nome: 'Ana Costa', funcao: 'Conferente', caixasHora: 300, status: 'Ativo', performance: 'Acima da Meta' },
       { nome: 'Roberto Alves', funcao: 'Ressupridor', caixasHora: 160, status: 'Ativo', performance: 'Na Meta' },
+    ];
+
+    const produtividadeHistorico = [
+      { dia: 'Qui', data: '09/04', valor: 210 },
+      { dia: 'Qua', data: '08/04', valor: 180 },
+      { dia: 'Ter', data: '07/04', valor: 205 },
+      { dia: 'Seg', data: '06/04', valor: 190 },
+      { dia: 'Dom', data: '05/04', valor: 150 },
+      { dia: 'Sáb', data: '04/04', valor: 220 },
+    ];
+
+    // Histórico de Tempo (em segundos para facilitar a lógica de comparação)
+    const tempoHistorico = [
+      { dia: 'Qui', data: '09/04', valor: '01:30', seg: 90 },
+      { dia: 'Qua', data: '08/04', valor: '01:55', seg: 115 },
+      { dia: 'Ter', data: '07/04', valor: '01:40', seg: 100 },
+      { dia: 'Seg', data: '06/04', valor: '02:10', seg: 130 },
+      { dia: 'Dom', data: '05/04', valor: '02:30', seg: 150 },
+      { dia: 'Sáb', data: '04/04', valor: '01:35', seg: 95 },
     ];
 
     const fefoData = {
@@ -237,12 +271,19 @@
       `;
     }
 
-    function ThermometerCard({ title, subtitle, value, unit, percentage, trend, trendValue, theme = 'blue' }) {
+    function ThermometerCard({ title, subtitle, value, unit, percentage, trend, trendValue, theme = 'blue', inverseTrend = false }) {
       const t = baseThemes[theme];
+      let thermoTheme = theme;
+      if (trend === 'up') {
+        thermoTheme = inverseTrend ? 'red' : 'green';
+      } else if (trend === 'down') {
+        thermoTheme = inverseTrend ? 'green' : 'red';
+      }
+      const thermoT = baseThemes[thermoTheme];
       const safePct = Math.min(100, Math.max(0, percentage));
       const trendIcon = trend === 'up' ? '<i data-lucide="trending-up" class="w-3.5 h-3.5"></i>' : trend === 'down' ? '<i data-lucide="trending-down" class="w-3.5 h-3.5"></i>' : `<span class="inline-block w-2 h-2 rounded-full ${t.bar}"></span>`;
-      const trendClass = trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-500' : 'text-slate-500';
-      const trendText = trendValue || `${percentage}% ${theme === 'red' ? 'nível crítico' : 'da meta'}`;
+      const trendClass = thermoTheme === 'green' ? 'text-green-600' : thermoTheme === 'red' ? 'text-red-500' : 'text-slate-500';
+      const trendText = trendValue || `${percentage}% ${thermoTheme === 'red' ? 'nível crítico' : 'da meta'}`;
 
       return `
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between relative overflow-hidden group">
@@ -266,14 +307,14 @@
                  <div class="w-full h-[1px] bg-slate-800"></div><div class="w-full h-[1px] bg-slate-800"></div>
                  <div class="w-full h-[1px] bg-slate-800"></div><div class="w-full h-[1px] bg-slate-800"></div>
                </div>
-               <div class="w-full transition-all duration-1000 relative ${t.bar}" style="height: ${safePct}%">
+               <div class="w-full transition-all duration-1000 relative ${thermoT.bar}" style="height: ${safePct}%">
                  <div class="absolute top-0 right-0 w-1/2 h-full bg-white/20"></div>
                </div>
                <div class="absolute top-[20%] left-0 w-full border-t-2 border-slate-800/30 z-10"></div>
             </div>
-            <div class="w-8 h-8 rounded-full shadow-md -mt-2 z-10 border-2 border-white flex items-center justify-center relative ${t.bulb}">
+            <div class="w-8 h-8 rounded-full shadow-md -mt-2 z-10 border-2 border-white flex items-center justify-center relative ${thermoT.bulb}">
                <div class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-white/40 blur-[1px]"></div>
-               <div class="absolute -inset-1 rounded-full opacity-20 animate-pulse ${t.bar}"></div>
+               <div class="absolute -inset-1 rounded-full opacity-20 animate-pulse ${thermoT.bar}"></div>
             </div>
           </div>
         </div>
@@ -283,6 +324,7 @@
     // --- Renderização de Abas Específicas ---
 
     function renderVisaoGeral() {
+      const maxCargas = Math.max(recebimentoData.cargas.agendadas, 1);
       return `
         <div class="fade-in">
           <div class="mb-6">
@@ -290,43 +332,53 @@
             <p class="text-sm text-slate-500">Resumo consolidado em tempo real das frentes operacionais do CD.</p>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${ThermometerCard({ title: 'Recebimento', subtitle: 'Cargas Processadas', value: recebimentoData.cargas.recebidas, unit: 'cargas', percentage: Math.round((recebimentoData.cargas.recebidas / recebimentoData.cargas.agendadas) * 100), theme: 'blue', trend: 'up', trendValue: '+5% vs ontem' })}
-            ${ThermometerCard({ title: 'Separação', subtitle: 'Volume Concluído', value: '11.4k', unit: 'cx', percentage: 72, theme: 'purple', trend: 'up', trendValue: '+12% vs ontem' })}
-            ${ThermometerCard({ title: 'Produtividade', subtitle: 'Tarefas Concluídas', value: '4.8k', unit: 'tarefas', percentage: 85, theme: 'green', trend: 'none', trendValue: 'de 5.6k gerado' })}
-            ${ThermometerCard({ title: 'Pressão Operacional', subtitle: 'Risco FEFO/Atrasos', value: '3.2k', unit: 'itens', percentage: 85, theme: 'red', trend: 'down', trendValue: '-2% vs ontem' })}
+            ${ThermometerCard({ title: 'Recebimento', subtitle: 'Cargas liberadas', value: recebimentoData.cargas.conferidas, unit: 'cargas', percentage: Math.round((recebimentoData.cargas.conferidas / recebimentoData.cargas.agendadas) * 100), theme: 'blue', trend: 'up', trendValue: '+5% vs ontem' })}
+            ${ThermometerCard({ title: 'Separação', subtitle: 'Volume Concluído', value: '11.4k', unit: 'cx', percentage: 72, theme: 'purple', trend: 'down', trendValue: '-3% vs ontem' })}
+            ${ThermometerCard({ title: 'Expedição', subtitle: 'Paletes Carregados', value: expedicaoData.kpis.paletesCarregados, unit: 'paletes', percentage: 82, theme: 'amber', trend: 'up', trendValue: '+15% vs ontem' })}
+            ${ThermometerCard({ title: 'Produtividade', subtitle: 'Tarefas Concluídas', value: '4.8k', unit: 'tarefas', percentage: 85, theme: 'indigo', trend: 'none', trendValue: 'de 5.6k gerado' })}
           </div>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-              <div class="flex justify-between items-center mb-6">
-                <div>
-                  <h3 class="font-bold text-slate-800">Fluxo da Doca (Recebimento)</h3>
-                  <p class="text-sm text-slate-500">Progresso e gargalo de veículos agendados.</p>
-                </div>
-                <button onclick="setMenu('recebimento')" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Ver Detalhes</button>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+              <div>
+                <h3 class="font-bold text-slate-800">Fluxo de Agendamento</h3>
+                <p class="text-sm text-slate-500">Progressão em tempo real das cargas no dia.</p>
               </div>
-              <div class="flex-1 flex items-center">
-                <div class="flex w-full justify-between gap-3 text-center">
-                  <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg py-4 px-2">
-                    <p class="text-xs font-medium text-slate-500 mb-1">Agendadas</p>
-                    <h4 class="text-2xl font-bold text-slate-800">${recebimentoData.cargas.agendadas}</h4>
-                  </div>
-                  <div class="flex-1 bg-blue-50 border border-blue-200 rounded-lg py-4 px-2">
-                    <p class="text-xs font-medium text-blue-600 mb-1">Recebidas</p>
-                    <h4 class="text-2xl font-bold text-blue-800">${recebimentoData.cargas.recebidas}</h4>
-                  </div>
-                  <div class="flex-1 bg-indigo-50 border border-indigo-200 rounded-lg py-4 px-2 relative">
-                    <p class="text-xs font-medium text-indigo-600 mb-1">Conferidas</p>
-                    <h4 class="text-2xl font-bold text-indigo-800">${recebimentoData.cargas.conferidas}</h4>
-                    <div class="absolute -top-2 -right-2 bg-amber-400 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">Gargalo</div>
-                  </div>
-                  <div class="flex-1 bg-green-50 border border-green-200 rounded-lg py-4 px-2">
-                    <p class="text-xs font-medium text-green-600 mb-1">Armazenadas</p>
-                    <h4 class="text-2xl font-bold text-green-800">${recebimentoData.cargas.armazenadas}</h4>
-                  </div>
+              <button onclick="setMenu('recebimento')" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Ver Detalhes</button>
+            </div>
+            <div class="flex-1 mt-2">
+              <div class="flex items-end justify-around h-48 px-4 gap-4">
+                <div class="flex flex-col justify-end items-center w-full h-full group">
+                  <span class="text-3xl font-bold text-slate-700 mb-3">${recebimentoData.cargas.agendadas}</span>
+                  <div class="w-12 md:w-20 lg:w-24 bg-slate-200 rounded-t-xl transition-all duration-1000 border-x border-t border-slate-300/50 shadow-inner" style="height: ${(recebimentoData.cargas.agendadas / maxCargas) * 100}%;"></div>
                 </div>
+                <div class="flex flex-col justify-end items-center w-full h-full group">
+                  <span class="text-3xl font-bold text-red-600 mb-3">${recebimentoData.cargas.atrasadas}</span>
+                  <div class="w-12 md:w-20 lg:w-24 bg-red-400 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-red-500/30" style="height: ${(recebimentoData.cargas.atrasadas / maxCargas) * 100}%;"></div>
+                </div>
+                <div class="flex flex-col justify-end items-center w-full h-full group">
+                  <span class="text-3xl font-bold text-blue-700 mb-3">${recebimentoData.cargas.recebidas}</span>
+                  <div class="w-12 md:w-20 lg:w-24 bg-blue-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-blue-600/30" style="height: ${(recebimentoData.cargas.recebidas / maxCargas) * 100}%;"></div>
+                </div>
+                <div class="flex flex-col justify-end items-center w-full h-full group relative">
+                  <span class="text-3xl font-bold text-indigo-700 mb-3">${recebimentoData.cargas.conferidas}</span>
+                  <div class="w-12 md:w-20 lg:w-24 bg-indigo-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-indigo-600/30" style="height: ${(recebimentoData.cargas.conferidas / maxCargas) * 100}%;"></div>
+                </div>
+                <div class="flex flex-col justify-end items-center w-full h-full group">
+                  <span class="text-3xl font-bold text-green-700 mb-3">${recebimentoData.cargas.armazenadas}</span>
+                  <div class="w-12 md:w-20 lg:w-24 bg-green-500 rounded-t-xl transition-all duration-1000 shadow-md border-x border-t border-green-600/30" style="height: ${(recebimentoData.cargas.armazenadas / maxCargas) * 100}%;"></div>
+                </div>
+              </div>
+              <div class="flex justify-around items-center px-4 mt-2 border-t-2 border-slate-100 pt-4 pb-2">
+                <span class="w-full text-center text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Agendadas</span>
+                <span class="w-full text-center text-[10px] md:text-xs font-bold text-red-600 uppercase tracking-wider">Atrasadas</span>
+                <span class="w-full text-center text-[10px] md:text-xs font-bold text-blue-600 uppercase tracking-wider">Recebidas</span>
+                <span class="w-full text-center text-[10px] md:text-xs font-bold text-indigo-600 uppercase tracking-wider">Conferidas</span>
+                <span class="w-full text-center text-[10px] md:text-xs font-bold text-green-600 uppercase tracking-wider">Armazenadas</span>
               </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
                 <div>
                   <h3 class="font-bold text-slate-800">Status das Linhas de Separação</h3>
@@ -346,29 +398,6 @@
                     </div>
                   </div>
                 `).join('')}
-              </div>
-            </div>
-          </div>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <h3 class="font-bold text-slate-800 mb-4">Quadro de Atenção Global</h3>
-              <div class="space-y-3">
-                <div class="flex items-center gap-4 p-3 bg-red-50 border border-red-100 rounded-lg">
-                  <i data-lucide="alert-triangle" class="text-red-500 flex-shrink-0 w-6 h-6"></i>
-                  <div class="flex-1">
-                    <p class="text-sm font-bold text-red-800">Risco Crítico de Atraso de Expedição</p>
-                    <p class="text-xs text-red-600">A Loja 01 - Hiper Centro possui 150 caixas pendentes com Cut-off às 14:30.</p>
-                  </div>
-                  <button onclick="setMenu('separacao')" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold rounded transition-colors">Ação</button>
-                </div>
-                <div class="flex items-center gap-4 p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                  <i data-lucide="package-x" class="text-amber-500 flex-shrink-0 w-6 h-6"></i>
-                  <div class="flex-1">
-                    <p class="text-sm font-bold text-amber-800">Divergências no Recebimento</p>
-                    <p class="text-xs text-amber-600">${recebimentoData.cargas.comDivergencia} cargas conferidas com quebra de confiança aguardam aprovação fiscal/qualidade.</p>
-                  </div>
-                  <button onclick="setMenu('recebimento')" class="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-semibold rounded transition-colors">Ação</button>
-                </div>
               </div>
             </div>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -411,42 +440,44 @@
             ${VolumeProgressCard({ title: 'Volumes em Paletes', agendados: recebimentoData.volumes.paletes.agendados, conferidos: recebimentoData.volumes.paletes.conferidos, unitText: 'conferidos', formatK: false, theme: 'amber' })}
             ${KpiCard({ title: 'Tempo Méd. Descarga', value: '45', unit: 'min', trend: 'up', trendValue: '+10min acima da meta', alert: true, theme: 'red' })}
           </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <div class="flex justify-between items-center mb-6">
-                <div>
-                  <h3 class="font-bold text-slate-800">Progresso de Cargas do Dia</h3>
-                  <p class="text-sm text-slate-500">Acompanhamento do status de veículos agendados.</p>
-                </div>
-                <div class="flex bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 items-center gap-2 font-semibold text-sm">
-                  <i data-lucide="calendar-x" class="w-4 h-4"></i> ${recebimentoData.cargas.noShow} No Show
-                </div>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
+            <div class="flex justify-between items-center mb-8">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800">Progresso de Cargas do Dia</h3>
+                <p class="text-sm text-slate-500">Acompanhamento centralizado do status de todos os veículos agendados para hoje.</p>
               </div>
-              <div class="flex flex-col md:flex-row justify-between gap-4">
-                <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
-                  <p class="text-slate-500 text-sm font-medium mb-1">Agendadas</p>
-                  <h4 class="text-3xl font-bold text-slate-800">${recebimentoData.cargas.agendadas}</h4>
-                </div>
-                <div class="flex-1 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                  <p class="text-blue-600 text-sm font-medium mb-1">Recebidas</p>
-                  <h4 class="text-3xl font-bold text-blue-800">${recebimentoData.cargas.recebidas}</h4>
-                </div>
-                <div class="flex-1 bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-center">
-                  <p class="text-indigo-600 text-sm font-medium mb-1">Conferidas</p>
-                  <h4 class="text-3xl font-bold text-indigo-800">${recebimentoData.cargas.conferidas}</h4>
-                </div>
-                <div class="flex-1 bg-green-50 border border-green-200 rounded-lg p-4 text-center relative overflow-hidden">
-                  <p class="text-green-600 text-sm font-medium mb-1">Armazenadas</p>
-                  <h4 class="text-3xl font-bold text-green-800">${recebimentoData.cargas.armazenadas}</h4>
-                  <div class="absolute bottom-0 left-0 w-full h-1 bg-green-500"></div>
-                </div>
+              <div class="flex bg-red-50 text-red-700 px-4 py-2 rounded-lg border border-red-200 items-center gap-2 font-bold text-sm">
+                <i data-lucide="calendar-x" class="w-4 h-4"></i> ${recebimentoData.cargas.noShow} No Show (Não Compareceram)
               </div>
             </div>
-
+            <div class="flex flex-col md:flex-row justify-between gap-6">
+              <div class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-6 text-center shadow-sm">
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Agendadas</p>
+                <h4 class="text-5xl font-black text-slate-800">${recebimentoData.cargas.agendadas}</h4>
+              </div>
+              <div class="flex-1 bg-red-50 border border-red-200 rounded-xl p-6 text-center shadow-sm">
+                <p class="text-red-600 text-xs font-bold uppercase tracking-widest mb-2">Atrasadas</p>
+                <h4 class="text-5xl font-black text-red-800">${recebimentoData.cargas.atrasadas}</h4>
+              </div>
+              <div class="flex-1 bg-blue-50 border border-blue-200 rounded-xl p-6 text-center shadow-sm">
+                <p class="text-blue-600 text-xs font-bold uppercase tracking-widest mb-2">Recebidas</p>
+                <h4 class="text-5xl font-black text-blue-800">${recebimentoData.cargas.recebidas}</h4>
+              </div>
+              <div class="flex-1 bg-indigo-50 border border-indigo-200 rounded-xl p-6 text-center shadow-sm">
+                <p class="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-2">Conferidas</p>
+                <h4 class="text-5xl font-black text-indigo-800">${recebimentoData.cargas.conferidas}</h4>
+              </div>
+              <div class="flex-1 bg-green-50 border border-green-200 rounded-xl p-6 text-center relative overflow-hidden shadow-sm">
+                <p class="text-green-600 text-xs font-bold uppercase tracking-widest mb-2">Armazenadas</p>
+                <h4 class="text-5xl font-black text-green-800">${recebimentoData.cargas.armazenadas}</h4>
+                <div class="absolute bottom-0 left-0 w-full h-2 bg-green-500"></div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <h3 class="font-bold text-slate-800 mb-1">Qualidade (Cargas Conferidas)</h3>
-              <p class="text-sm text-slate-500 mb-6">Índice de quebra de confiança no recebimento.</p>
+              <p class="text-sm text-slate-500 mb-6">Índice de divergências no recebimento físico.</p>
               <div class="flex-1 flex flex-col justify-center gap-6">
                 <div>
                   <div class="flex justify-between text-sm font-semibold mb-2">
@@ -468,29 +499,28 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 class="font-bold text-slate-800 mb-1">Status Físico dos Paletes Conferidos</h3>
-            <p class="text-sm text-slate-500 mb-6">Onde os ${recebimentoData.paletes.conferidos} paletes recebidos hoje estão neste momento?</p>
-            <div class="flex flex-col gap-5">
-              <div class="flex items-center gap-4">
-                <div class="w-48 text-sm font-semibold text-slate-700 flex justify-between"><span>Aguardando na Doca</span><span class="text-slate-500">${recebimentoData.paletes.naDoca} PL</span></div>
-                <div class="flex-1 bg-slate-100 rounded-full h-4"><div class="bg-amber-400 h-4 rounded-full" style="width: ${(recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100}%"></div></div>
-                <span class="w-12 text-right text-sm font-bold text-amber-500">${Math.round((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100)}%</span>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="w-48 text-sm font-semibold text-slate-700 flex justify-between"><span>Na Rua (Sem Endereço)</span><span class="text-slate-500">${recebimentoData.paletes.emTransito} PL</span></div>
-                <div class="flex-1 bg-slate-100 rounded-full h-4 relative">
-                  <div class="bg-blue-500 h-4 rounded-full" style="width: ${(recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100}%"></div>
-                  ${recebimentoData.paletes.emTransito > 20 ? `<div class="absolute top-1/2 -translate-y-1/2 left-[calc(100%+8px)] text-xs text-red-500 font-bold whitespace-nowrap flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta</div>` : ''}
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+              <h3 class="font-bold text-slate-800 mb-1">Status Físico dos Paletes Conferidos</h3>
+              <p class="text-sm text-slate-500 mb-6">Onde os ${recebimentoData.paletes.conferidos} paletes recebidos hoje estão localizados?</p>
+              <div class="flex flex-col gap-5">
+                <div class="flex items-center gap-4">
+                  <div class="w-48 text-sm font-semibold text-slate-700 flex justify-between"><span>Aguardando na Doca</span><span class="text-slate-500">${recebimentoData.paletes.naDoca} PL</span></div>
+                  <div class="flex-1 bg-slate-100 rounded-full h-4"><div class="bg-amber-400 h-4 rounded-full" style="width: ${(recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100}%"></div></div>
+                  <span class="w-12 text-right text-sm font-bold text-amber-500">${Math.round((recebimentoData.paletes.naDoca / recebimentoData.paletes.conferidos) * 100)}%</span>
                 </div>
-                <span class="w-12 text-right text-sm font-bold text-blue-500">${Math.round((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100)}%</span>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="w-48 text-sm font-semibold text-slate-700 flex justify-between"><span>Armazenados</span><span class="text-slate-500">${recebimentoData.paletes.armazenados} PL</span></div>
-                <div class="flex-1 bg-slate-100 rounded-full h-4"><div class="bg-green-500 h-4 rounded-full" style="width: ${(recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100}%"></div></div>
-                <span class="w-12 text-right text-sm font-bold text-green-500">${Math.round((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100)}%</span>
+                <div class="flex items-center gap-4">
+                  <div class="w-48 text-sm font-semibold text-slate-700 flex justify-between"><span>Na Rua (Sem Endereço)</span><span class="text-slate-500">${recebimentoData.paletes.emTransito} PL</span></div>
+                  <div class="flex-1 bg-slate-100 rounded-full h-4 relative">
+                    <div class="bg-blue-500 h-4 rounded-full" style="width: ${(recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100}%"></div>
+                    ${recebimentoData.paletes.emTransito > 20 ? `<div class="absolute top-1/2 -translate-y-1/2 left-[calc(100%+8px)] text-xs text-red-500 font-bold whitespace-nowrap flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta de Pátio</div>` : ''}
+                  </div>
+                  <span class="w-12 text-right text-sm font-bold text-blue-500">${Math.round((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100)}%</span>
+                </div>
+                <div class="flex items-center gap-4">
+                  <div class="w-48 text-sm font-semibold text-slate-700 flex justify-between"><span>Armazenados</span><span class="text-slate-500">${recebimentoData.paletes.armazenados} PL</span></div>
+                  <div class="flex-1 bg-slate-100 rounded-full h-4"><div class="bg-green-500 h-4 rounded-full" style="width: ${(recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100}%"></div></div>
+                  <span class="w-12 text-right text-sm font-bold text-green-500">${Math.round((recebimentoData.paletes.armazenados / recebimentoData.paletes.conferidos) * 100)}%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -509,14 +539,12 @@
             </div>
             <button class="ml-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded shadow-sm transition-colors">Ver Sugestão de Remanejamento</button>
           </div>
-
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             ${KpiCard({ title: 'Lotes de Separação', value: '4.2k', unit: 'lotes', trend: 'up', trendValue: '81% de 5.2k gerados' })}
             ${VolumeProgressCard({ title: 'Progresso em Itens', agendados: 84500, conferidos: 62300, unitText: 'itens', formatK: true, theme: 'indigo', targetLabel: 'a separar' })}
             ${KpiCard({ title: 'Progresso em Volumes', value: '11.4k', unit: '/ 15.7k', trend: 'up', trendValue: '72% concluído' })}
             ${KpiCard({ title: 'Taxa de Ruptura (Corte de Itens)', value: '0.8', unit: '%', trend: 'down', trendValue: '-0.2% vs ontem', alert: false })}
           </div>
-
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <h3 class="font-bold text-slate-800 mb-1">Progresso por Linha de Separação</h3>
@@ -525,7 +553,7 @@
                 ${separacaoData.ondas.map(onda => `
                   <div>
                     <div class="flex justify-between text-sm font-semibold mb-2">
-                      <span class="text-slate-700">${onda.id} <span class="text-slate-400 font-normal ml-2">({${onda.totalCx}} caixas)</span></span>
+                      <span class="text-slate-700">${onda.id} <span class="text-slate-400 font-normal ml-2">(${onda.totalCx} caixas)</span></span>
                       <span class="flex items-center gap-3">
                         <span class="text-xs px-2 py-0.5 rounded-full ${onda.progresso === 100 ? 'bg-green-100 text-green-700' : onda.progresso > 0 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${onda.status}</span>
                         <span class="w-10 text-right">${onda.progresso}%</span>
@@ -538,7 +566,6 @@
                 `).join('')}
               </div>
             </div>
-
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <div class="mb-4 flex justify-between items-center">
                 <div>
@@ -572,16 +599,15 @@
       return `
         <div class="fade-in">
           <div class="mb-6">
-            <h2 class="text-lg font-bold text-slate-800">Controlo de Expedição</h2>
+            <h2 class="text-lg font-bold text-slate-800">Controle de Expedição</h2>
             <p class="text-sm text-slate-500">Monitorização de pulmões de saída (Stage-Out), carregamento de docas e expedição de veículos.</p>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${KpiCard({ title: 'Paletes no Stage-Out', value: expedicaoData.kpis.paletesProntos, unit: 'pl', icon: 'layout-grid', trend: 'up', trendValue: 'Aguardar carregamento', theme: 'amber' })}
-            ${KpiCard({ title: 'Paletes Carregados (Dia)', value: expedicaoData.kpis.paletesCarregados, unit: 'pl', icon: 'package', trend: 'up', trendValue: '+15% vs ontem', theme: 'green' })}
+            ${KpiCard({ title: 'Paletes no Stage-Out', value: expedicaoData.kpis.paletesProntos, unit: 'paletes', icon: 'layout-grid', trend: 'up', trendValue: 'Aguardar carregamento', theme: 'amber' })}
+            ${KpiCard({ title: 'Paletes Carregados (Dia)', value: expedicaoData.kpis.paletesCarregados, unit: 'paletes', icon: 'package', trend: 'up', trendValue: '+15% vs ontem', theme: 'green' })}
             ${KpiCard({ title: 'Veículos nas Docas', value: expedicaoData.kpis.veiculosDoca, unit: 'veículos', icon: 'door-open', trend: 'none', trendValue: '2 aguardar pátio', theme: 'blue' })}
             ${KpiCard({ title: 'Veículos Expedidos', value: expedicaoData.kpis.veiculosExpedidos, unit: 'viagens', icon: 'truck', trend: 'up', trendValue: 'Fluxo dentro da meta', theme: 'indigo' })}
           </div>
-          
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
@@ -609,7 +635,6 @@
                 `).join('')}
               </div>
             </div>
-
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <h3 class="font-bold text-slate-800 mb-1">Painel de Carregamento (Docas)</h3>
               <p class="text-sm text-slate-500 mb-6">Status em tempo real das portas de expedição.</p>
@@ -652,15 +677,122 @@
     }
 
     function renderProdutividade() {
+      const valorVolumeHoje = 195;
+      const valorTempoHojeSeg = 102; // 01:42
+      
       return `
         <div class="fade-in">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${KpiCard({ title: 'Média Global', value: '195', unit: 'cx/h', icon: 'trending-up', trend: 'up', trendValue: '+12 cx/h vs ontem', theme: 'blue' })}
-            ${KpiCard({ title: 'Operadores Logados', value: '42', unit: '/ 45', icon: 'users', trend: 'none', trendValue: 'Turno 1', theme: 'blue' })}
-            ${KpiCard({ title: 'Tempo Ocioso Médio', value: '12', unit: '%', icon: 'clock', trend: 'down', trendValue: '-2% vs meta', alert: false, theme: 'blue' })}
-            ${KpiCard({ title: 'Tarefas Concluídas', value: '4.8', unit: 'k', icon: 'clipboard-list', trend: 'up', trendValue: '85% do previsto hoje', theme: 'blue' })}
+            ${KpiCard({ title: 'Atividades Geradas', value: '5.6', unit: 'k', icon: 'list-todo', trend: 'up', trendValue: '+5% vs ontem', theme: 'blue' })}
+            ${KpiCard({ title: 'Atividades em Execução', value: '840', unit: '', icon: 'activity', trend: 'none', trendValue: '15% do total gerado', theme: 'amber' })}
+            ${KpiCard({ title: 'Atividades finalizadas', value: '4.8', unit: 'k', icon: 'clipboard-list', trend: 'up', trendValue: '85,7% do total gerado', theme: 'blue' })}
+            ${KpiCard({ title: 'Produtivos com atividades', value: '42', unit: '', icon: 'users', trend: 'up', trendValue: '93,3% dos logados', theme: 'green' })}
           </div>
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            
+            <!-- CARD: Análise de Volume/Hora -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+              <div class="mb-5">
+                <div class="flex items-center gap-2 mb-1">
+                  <i data-lucide="calculator" class="text-blue-500 w-5 h-5"></i>
+                  <h3 class="font-bold text-slate-800">Volumes por Hora</h3>
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed mt-2">Quantidade de itens processados dividida pelas horas logadas na função.</p>
+              </div>
+              <div class="flex-1 flex flex-col justify-between">
+                 <div class="flex-1 flex justify-center items-center gap-1.5 py-4">
+                     <span class="text-5xl font-black text-slate-800 tracking-tight">${valorVolumeHoje}</span>
+                     <span class="text-xl font-bold text-slate-500 self-end mb-1">cx/h</span>
+                 </div>
+                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mt-2">
+                   <div class="flex justify-between items-center">
+                     <div class="text-center w-full">
+                       <span class="block text-xl font-bold text-slate-800">15.405</span>
+                       <span class="block text-[10px] text-slate-500 font-medium uppercase mt-1">Itens<br>Processados</span>
+                     </div>
+                     <div class="w-px h-10 bg-slate-200"></div>
+                     <div class="text-center w-full">
+                       <span class="block text-xl font-bold text-slate-800">79h</span>
+                       <span class="block text-[10px] text-slate-500 font-medium uppercase mt-1">Horas<br>Logadas</span>
+                     </div>
+                   </div>
+                 </div>
+                 <!-- Histórico Volumes -->
+                 <div class="mt-6 pt-4 border-t border-slate-100">
+                   <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">Histórico Últimos 6 Dias</p>
+                   <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      ${produtividadeHistorico.map(hist => {
+                        const isBetter = hist.valor >= valorVolumeHoje;
+                        return `
+                          <div class="flex flex-col items-center p-2 rounded border border-slate-100 bg-white shadow-sm">
+                            <span class="text-[9px] text-slate-500 font-bold uppercase">${hist.dia}</span>
+                            <span class="text-[8px] text-slate-400 mb-1">${hist.data}</span>
+                            <div class="flex flex-col items-center">
+                              <span class="text-xs font-black ${isBetter ? 'text-emerald-600' : 'text-red-500'}">${hist.valor}</span>
+                              <span class="text-[8px] font-medium text-slate-400">cx/h</span>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+            <!-- CARD: Tempo Médio por Atividade -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+              <div class="mb-5">
+                <div class="flex items-center gap-2 mb-1">
+                  <i data-lucide="timer" class="text-green-500 w-5 h-5"></i>
+                  <h3 class="font-bold text-slate-800">Tempo médio por atividade</h3>
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed mt-2">Quanto tempo o colaborador leva para completar uma tarefa do início ao fim.</p>
+              </div>
+              <div class="flex-1 flex flex-col justify-between">
+                 <div class="flex-1 flex justify-center items-center py-4">
+                     <span class="text-5xl font-black text-slate-800 tracking-tight">00h 01m 42s</span>
+                 </div>
+                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mt-2">
+                   <div class="flex justify-between items-center">
+                     <div class="text-center w-full">
+                       <span class="block text-xl font-bold text-slate-800">4.800</span>
+                       <span class="block text-[10px] text-slate-500 font-medium uppercase mt-1">Atividades<br>Finalizadas</span>
+                     </div>
+                     <div class="w-px h-10 bg-slate-200"></div>
+                     <div class="text-center w-full">
+                       <span class="block text-xl font-bold text-slate-800">136h</span>
+                       <span class="block text-[10px] text-slate-500 font-medium uppercase mt-1">Tempo Total<br>Utilizado</span>
+                     </div>
+                   </div>
+                 </div>
+                 <!-- Histórico Tempo (REPLICADO) -->
+                 <div class="mt-6 pt-4 border-t border-slate-100">
+                   <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">Histórico Últimos 6 Dias</p>
+                   <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      ${tempoHistorico.map(hist => {
+                        // Para tempo, MENOR é melhor.
+                        const isBetter = hist.seg <= valorTempoHojeSeg;
+                        return `
+                          <div class="flex flex-col items-center p-2 rounded border border-slate-100 bg-white shadow-sm">
+                            <span class="text-[9px] text-slate-500 font-bold uppercase">${hist.dia}</span>
+                            <span class="text-[8px] text-slate-400 mb-1">${hist.data}</span>
+                            <div class="flex flex-col items-center">
+                              <span class="text-xs font-black ${isBetter ? 'text-emerald-600' : 'text-red-500'}">${hist.valor}</span>
+                              <span class="text-[8px] font-medium text-slate-400">m:s</span>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Tabela Ranking -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
             <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <div>
                 <h3 class="font-bold text-slate-800">Ranking de Operadores no Turno</h3>
@@ -722,7 +854,6 @@
             ${KpiCard({ title: 'Risco Financeiro Imediato', value: 'R$ 96k', unit: '', icon: 'dollar-sign', trend: 'up', trendValue: 'Em itens de alto risco', theme: 'indigo' })}
             ${KpiCard({ title: 'Acuracidade FEFO', value: '98.5', unit: '%', icon: 'shield-check', trend: 'up', trendValue: '+0.2% aderência', theme: 'green' })}
           </div>
-          
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
@@ -745,7 +876,6 @@
                 `).join('')}
               </div>
             </div>
-
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <h3 class="font-bold text-slate-800 mb-1">Risco Financeiro por Setor</h3>
               <p class="text-sm text-slate-500 mb-6">Categorias com maior volume a vencer.</p>
@@ -772,8 +902,6 @@
       `;
     }
 
-    // --- Lógica de Navegação ---
-
     const menuItemsConfig = [
       { id: 'dashboard', label: 'Visão Geral', icon: 'layout-dashboard', render: renderVisaoGeral },
       { id: 'recebimento', label: 'Recebimento', icon: 'arrow-down-to-line', render: renderRecebimento },
@@ -791,7 +919,7 @@
           onclick="setMenu('${item.id}')"
           class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
             activeMenu === item.id 
-              ? 'bg-blue-600 text-white' 
+              ? 'bg-blue-600 text-white shadow-lg' 
               : 'hover:bg-slate-800 hover:text-white'
           }"
         >
@@ -806,25 +934,16 @@
     window.setMenu = function(menuId) {
       activeMenu = menuId;
       const config = menuItemsConfig.find(i => i.id === menuId);
-      
-      // Atualiza Título
       document.getElementById('header-title').innerText = config.label;
-      
-      // Renderiza Conteúdo
       document.getElementById('main-content').innerHTML = config.render();
-      
-      // Renderiza Sidebar para atualizar o estado "Ativo"
       renderSidebar();
-      
-      // Recria ícones para os elementos injetados na DOM
       lucide.createIcons();
+      document.getElementById('main-content').scrollTop = 0;
     };
 
-    // --- Inicialização ---
     document.addEventListener("DOMContentLoaded", () => {
       setMenu('dashboard');
     });
-
   </script>
 </body>
 </html>
