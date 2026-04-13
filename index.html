@@ -203,6 +203,11 @@
         { loja: 'Loja 01 - Hiper Centro', rota: 'Rota A', pendente: '150 cx', status: 'Atrasado', prioridade: 'Alta', cutoff: '14:30' },
         { loja: 'Loja 05 - Bairro Sul', rota: 'Rota B', pendente: '80 cx', status: 'Em Risco', prioridade: 'Média', cutoff: '15:00' },
         { loja: 'Loja 08 - Expresso Norte', rota: 'Rota C', pendente: '320 cx', status: 'Atrasado', prioridade: 'Alta', cutoff: '14:00' },
+      ],
+      ruptura30Dias: [
+        0.9, 0.8, 1.1, 0.7, 0.6, 1.2, 0.8, 0.9, 0.7, 0.8, 
+        0.5, 0.6, 0.9, 1.0, 1.4, 1.8, 1.2, 0.9, 0.8, 0.7, 
+        0.6, 0.8, 0.9, 1.1, 0.8, 0.7, 0.6, 0.9, 0.8, 0.8
       ]
     };
 
@@ -1009,7 +1014,7 @@
           </div>
 
           <!-- NOVO CARD: TAXA DE RUPTURA DETALHADA -->
-          <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-8 mb-8">
+          <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-8 mb-8 flex flex-col">
             <div class="flex flex-col lg:flex-row items-center gap-10">
               <!-- Esquerda: Títulos e Valor Principal -->
               <div class="lg:w-1/3 w-full flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-slate-100 pb-6 lg:pb-0 lg:pr-10">
@@ -1055,6 +1060,50 @@
                   <span class="text-emerald-600 flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm"></div> Volume Garantido</span>
                   <span class="text-red-600 flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm animate-pulse"></div> 125 cx Cortadas</span>
                 </div>
+              </div>
+            </div>
+
+            <!-- SEÇÃO INFERIOR: GRÁFICO DE BARRAS DOS ÚLTIMOS 30 DIAS -->
+            <div class="mt-8 pt-6 border-t border-slate-100 w-full flex flex-col">
+              <div class="flex justify-between items-end mb-6">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800">Histórico de Ruptura (Últimos 30 Dias)</h4>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Evolução diária do percentual de cortes na separação.</p>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Média do Período</span>
+                  <span class="block text-xl font-black text-slate-700 leading-tight">0.9%</span>
+                </div>
+              </div>
+
+              <!-- Gráfico de Barras -->
+              <div class="h-32 flex items-end justify-between gap-0.5 sm:gap-1.5 w-full">
+                ${separacaoData.ruptura30Dias.map(valor => {
+                  const maxPercent = 2.0; // Definindo um teto de 2% para a escala do gráfico
+                  const height = Math.min((valor / maxPercent) * 100, 100);
+                  const isSpike = valor > 1.2;
+                  return `
+                    <div class="relative flex-1 flex flex-col justify-end h-full group cursor-pointer">
+                      <!-- Tooltip (Flutuante) -->
+                      <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none shadow-md">
+                        ${valor}%
+                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                      </div>
+                      
+                      <!-- Barra Vertical -->
+                      <div class="w-full ${isSpike ? 'bg-red-500' : 'bg-red-300'} rounded-t-sm transition-all duration-300 group-hover:bg-red-600 group-hover:shadow-md flex justify-center items-start pt-1.5 overflow-hidden" style="height: ${height}%; min-height: 18px;">
+                        <span class="text-[8px] sm:text-[9px] font-bold text-white leading-none tracking-tighter">${valor}%</span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+              
+              <!-- Eixo X (Rótulos) -->
+              <div class="flex justify-between text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest px-1">
+                <span>30 Dias Atrás</span>
+                <span>15 Dias Atrás</span>
+                <span>Hoje</span>
               </div>
             </div>
           </div>
