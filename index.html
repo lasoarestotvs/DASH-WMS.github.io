@@ -166,10 +166,10 @@
   <script>
     // --- Mock Data ---
     const heatMapRacks = [
-      { id: '12', temp: 95 }, { id: '13', temp: 80 }, { id: '14', temp: 40 },
-      { id: '15', temp: 20 }, { id: '16', temp: 15 }, { id: '17', temp: 10 },
-      { id: '01', temp: 15 }, { id: '02', temp: 25 }, { id: '03', temp: 60 },
-      { id: '04', temp: 85 }, { id: '05', temp: 45 }, { id: '06', temp: 30 },
+      { id: '01', visitas: 300 },  { id: '02', visitas: 650 },  { id: '03', visitas: 1800 },
+      { id: '04', visitas: 3100 }, { id: '05', visitas: 1500 }, { id: '06', visitas: 950 },
+      { id: '12', visitas: 3450 }, { id: '13', visitas: 2800 }, { id: '14', visitas: 1200 },
+      { id: '15', visitas: 850 },  { id: '16', visitas: 420 },  { id: '17', visitas: 210 },
     ];
 
     const getHeatColor = (value) => {
@@ -1108,53 +1108,93 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-              <h3 class="font-bold text-slate-800 mb-1">Progresso por Linha de Separação</h3>
-              <p class="text-sm text-slate-500 mb-6">Monitorização do avanço das rotas consolidadas.</p>
-              <div class="flex-1 flex flex-col justify-center gap-6">
-                ${separacaoData.ondas.map(onda => `
+          <!-- Cards Empilhados Verticalmente -->
+          <div class="flex flex-col gap-6 mb-8">
+            
+            <!-- Tráfego de Picking (Refatorado) -->
+            ${(() => {
+              const totalVisitas = heatMapRacks.reduce((acc, curr) => acc + curr.visitas, 0);
+              const maxVisitas = Math.max(...heatMapRacks.map(r => r.visitas));
+              
+              const getThemeForVisits = (visitas) => {
+                  const ratio = visitas / maxVisitas;
+                  if (ratio >= 0.8) return { bg: 'bg-red-50', border: 'border-red-200', textMain: 'text-red-700', textSub: 'text-red-500', bar: 'bg-red-500' };
+                  if (ratio >= 0.5) return { bg: 'bg-amber-50', border: 'border-amber-200', textMain: 'text-amber-700', textSub: 'text-amber-500', bar: 'bg-amber-400' };
+                  if (ratio >= 0.2) return { bg: 'bg-blue-50', border: 'border-blue-200', textMain: 'text-blue-700', textSub: 'text-blue-500', bar: 'bg-blue-400' };
+                  return { bg: 'bg-slate-50', border: 'border-slate-200', textMain: 'text-slate-700', textSub: 'text-slate-400', bar: 'bg-slate-300' };
+              };
+
+              return `
+              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                   <div>
-                    <div class="flex justify-between text-sm font-semibold mb-2">
-                      <span class="text-slate-700">${onda.id} <span class="text-slate-400 font-normal ml-2">(${onda.totalCx} caixas)</span></span>
-                      <span class="flex items-center gap-3">
-                        <span class="text-xs px-2 py-0.5 rounded-full ${onda.progresso === 100 ? 'bg-green-100 text-green-700' : onda.progresso > 0 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${onda.status}</span>
-                      </span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-5 relative overflow-hidden shadow-inner">
-                      <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${onda.progresso === 100 ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${onda.progresso}%"></div>
-                      <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-xs font-bold ${onda.progresso > 50 ? 'text-white' : 'text-slate-600'}">${onda.progresso}%</span>
-                      </div>
+                    <h3 class="font-bold text-xl text-slate-800">Tráfego de Picking</h3>
+                    <p class="text-sm text-slate-500">Distribuição de acessos por rua no depósito inteiro.</p>
+                  </div>
+                  
+                  <!-- Destaque Total Visitas -->
+                  <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-5 py-2.5 flex items-center gap-3 shadow-sm">
+                    <div class="p-2 bg-indigo-100 rounded-lg text-indigo-600"><i data-lucide="footprints" class="w-5 h-5"></i></div>
+                    <div>
+                        <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest leading-none mb-1">Total de Visitas</p>
+                        <p class="text-2xl font-black text-indigo-700 leading-none">${totalVisitas.toLocaleString('pt-BR')}</p>
                     </div>
                   </div>
-                `).join('')}
-              </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-              <div class="mb-4 flex justify-between items-center">
-                <div>
-                  <h3 class="font-bold text-slate-800">Tráfego de Picking</h3>
-                  <p class="text-sm text-slate-500">Calor de operadores.</p>
                 </div>
-                <i data-lucide="map" class="text-slate-400 w-5 h-5"></i>
-              </div>
-              <div class="flex-1 flex flex-col relative">
-                <div class="flex justify-end gap-2 text-[10px] text-slate-500 items-center mb-3">
-                  <span class="flex items-center gap-1"><div class="w-2 h-2 bg-blue-200 rounded-sm"></div> Livre</span>
-                  <span class="flex items-center gap-1"><div class="w-2 h-2 bg-amber-400 rounded-sm"></div> Médio</span>
-                  <span class="flex items-center gap-1"><div class="w-2 h-2 bg-red-500 rounded-sm"></div> Gargalo</span>
+                
+                <div class="flex-1 flex flex-col">
+                  <!-- Grid de Ruas (2 linhas x 6 colunas) -->
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-5 flex-1 mt-2">
+                    ${heatMapRacks.map(rack => {
+                      const pct = ((rack.visitas / totalVisitas) * 100).toFixed(1);
+                      const t = getThemeForVisits(rack.visitas);
+                      
+                      // Simulação de média de 30 dias com uma ligeira variação para ilustrar o layout
+                      const media30d = Math.round(rack.visitas * (1 + (parseInt(rack.id) % 2 === 0 ? -0.12 : 0.08))); 
+                      
+                      return `
+                        <div class="${t.bg} border ${t.border} rounded-2xl p-4 flex flex-col items-center min-h-[160px] relative overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-center">
+                          <!-- Barra indicadora superior -->
+                          <div class="absolute top-0 left-0 w-full h-2 ${t.bar}"></div>
+                          
+                          <!-- Título (Rua) -->
+                          <span class="font-black ${t.textMain} text-lg lg:text-xl uppercase tracking-tight mt-1 mb-1.5">Rua ${rack.id}</span>
+                          
+                          <!-- Percentual -->
+                          <div class="flex items-center justify-center bg-white/80 border ${t.border} rounded-lg px-3 py-1 shadow-sm mb-auto">
+                              <span class="text-[10px] lg:text-xs font-black ${t.textMain}">${pct}%</span>
+                          </div>
+                          
+                          <!-- Corpo (Quantidade Total de Visitas e Média) -->
+                          <div class="w-full mt-3 flex flex-col items-center bg-white/50 rounded-xl p-2.5 border border-white/60 shadow-[inset_0_2px_4px_rgba(255,255,255,0.7)] group-hover:bg-white/70 transition-colors">
+                              <div class="flex items-center gap-1.5 mb-1">
+                                  <i data-lucide="footprints" class="w-3 h-3 ${t.textSub}"></i>
+                                  <span class="text-[8px] lg:text-[9px] font-bold ${t.textSub} uppercase tracking-widest mt-0.5">Visitas</span>
+                              </div>
+                              <span class="text-2xl lg:text-3xl font-black ${t.textMain} leading-none tracking-tighter mb-1.5">${rack.visitas.toLocaleString('pt-BR')}</span>
+                              
+                              <!-- Nova linha: Média 30 dias -->
+                              <div class="w-full pt-1.5 border-t border-black/5 flex justify-center items-baseline gap-1">
+                                  <span class="text-[8px] font-bold ${t.textSub} uppercase">Média(30d):</span>
+                                  <span class="text-[10px] font-black ${t.textMain}">${media30d.toLocaleString('pt-BR')}</span>
+                              </div>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                  
+                  <!-- Legenda -->
+                  <div class="flex justify-end gap-3 md:gap-5 mt-5 pt-4 border-t border-slate-100">
+                      <span class="flex items-center gap-1.5 text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest"><div class="w-3 h-3 bg-red-500 rounded-sm"></div> Gargalo</span>
+                      <span class="flex items-center gap-1.5 text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest"><div class="w-3 h-3 bg-amber-400 rounded-sm"></div> Alto Movimento</span>
+                      <span class="flex items-center gap-1.5 text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest"><div class="w-3 h-3 bg-blue-400 rounded-sm"></div> Médio/Normal</span>
+                  </div>
                 </div>
-                <div class="grid grid-cols-6 gap-x-2 gap-y-4 flex-1 items-center bg-slate-50 p-4 rounded-lg border border-slate-200/60 shadow-inner">
-                  ${heatMapRacks.map(rack => `
-                    <div class="flex flex-col items-center group relative cursor-pointer hover:-translate-y-0.5 transition-transform">
-                      <div class="w-full h-12 rounded-sm transition-colors duration-300 shadow-sm border border-black/5 ${getHeatColor(rack.temp)}"></div>
-                      <span class="text-[9px] text-slate-500 mt-1.5 font-bold">R${rack.id}</span>
-                    </div>
-                  `).join('')}
-                </div>
               </div>
-            </div>
+              `;
+            })()}
+            
           </div>
         </div>
       `;
