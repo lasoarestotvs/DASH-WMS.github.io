@@ -261,12 +261,16 @@
     };
 
     const expedicaoData = {
-      kpis: { paletesProntos: 345, paletesCarregados: 820, veiculosDoca: 6, veiculosExpedidos: 14 },
+      kpis: { paletesAExpedir: 1250, mediaPaletes30d: 1100, paletesProntos: 345, paletesDoca: 85, paletesCarregados: 820, veiculosDoca: 6, veiculosExpedidos: 14 },
       stageOut: [
         { id: 'Stage 01 (Rota Norte)', ocupacao: 95, paletes: 45, status: 'Lotado', color: 'bg-red-500' },
         { id: 'Stage 02 (Rota Sul)', ocupacao: 65, paletes: 32, status: 'Normal', color: 'bg-blue-500' },
         { id: 'Stage 03 (Hiper Centro)', ocupacao: 20, paletes: 10, status: 'Livre', color: 'bg-emerald-500' },
         { id: 'Stage 04 (Express 24h)', ocupacao: 85, paletes: 25, status: 'Atenção', color: 'bg-amber-400' },
+        { id: 'Stage 05 (Litoral Norte)', ocupacao: 50, paletes: 18, status: 'Normal', color: 'bg-blue-400' },
+        { id: 'Stage 06 (Litoral Sul)', ocupacao: 15, paletes: 5, status: 'Livre', color: 'bg-emerald-400' },
+        { id: 'Stage 07 (Interior)', ocupacao: 75, paletes: 30, status: 'Atenção', color: 'bg-amber-500' },
+        { id: 'Stage 08 (Capital)', ocupacao: 90, paletes: 40, status: 'Lotado', color: 'bg-red-400' },
       ],
       docas: [
         { id: 'Doca 01', veiculo: 'Caminhão Toco', placa: 'ABC-1234', rota: 'Rota Norte', progresso: 85, status: 'A Carregar' },
@@ -1204,49 +1208,151 @@
       return `
         <div class="fade-in">
           <div class="mb-6">
-            <h2 class="text-lg font-bold text-slate-800">Controlo de Expedição</h2>
+            <h2 class="text-lg font-bold text-slate-800">Controle de Expedição</h2>
             <p class="text-sm text-slate-500">Monitorização de pulmões de saída (Stage-Out), carregamento de docas e expedição de veículos.</p>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${KpiCard({ title: 'Paletes no Stage-Out', value: expedicaoData.kpis.paletesProntos, unit: 'paletes', icon: 'layout-grid', trend: 'up', trendValue: 'Aguardar carregamento', theme: 'amber' })}
-            ${KpiCard({ title: 'Paletes Carregados (Dia)', value: expedicaoData.kpis.paletesCarregados, unit: 'paletes', icon: 'package', trend: 'up', trendValue: '+15% vs ontem', theme: 'green' })}
-            ${KpiCard({ title: 'Veículos nas Docas', value: expedicaoData.kpis.veiculosDoca, unit: 'veículos', icon: 'door-open', trend: 'none', trendValue: '2 aguardar pátio', theme: 'blue' })}
-            ${KpiCard({ title: 'Veículos Expedidos', value: expedicaoData.kpis.veiculosExpedidos, unit: 'viagens', icon: 'truck', trend: 'up', trendValue: 'Fluxo dentro da meta', theme: 'indigo' })}
+          
+          <!-- BLOCO UNIFICADO: Total a Expedir + Fluxo de Paletes (Layout Atualizado) -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Paletes a Expedir</h3>
+                <p class="text-sm text-slate-500">Acompanhamento do fluxo de consolidação desde o término da separação até ao embarque.</p>
+              </div>
+              <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
+                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mb-0.5">Total a Expedir</p>
+                <div class="flex items-baseline justify-center gap-1">
+                  <span class="text-3xl font-black text-indigo-700">${expedicaoData.kpis.paletesAExpedir.toLocaleString('pt-BR')}</span>
+                  <span class="text-xs font-bold text-indigo-500">PL</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+              <!-- Item 1: Stage-Out -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes no<br>Stage-Out</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-amber-500">${expedicaoData.kpis.paletesProntos}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-amber-400" style="width: ${(expedicaoData.kpis.paletesProntos / expedicaoData.kpis.paletesAExpedir) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((expedicaoData.kpis.paletesProntos / expedicaoData.kpis.paletesAExpedir) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((expedicaoData.kpis.paletesProntos / expedicaoData.kpis.paletesAExpedir) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 2: Na Doca -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes na<br>Doca</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-blue-600">${expedicaoData.kpis.paletesDoca}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-blue-500" style="width: ${(expedicaoData.kpis.paletesDoca / expedicaoData.kpis.paletesAExpedir) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((expedicaoData.kpis.paletesDoca / expedicaoData.kpis.paletesAExpedir) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((expedicaoData.kpis.paletesDoca / expedicaoData.kpis.paletesAExpedir) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3: Carregados -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes<br>Carregados</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-green-600">${expedicaoData.kpis.paletesCarregados}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-green-500" style="width: ${(expedicaoData.kpis.paletesCarregados / expedicaoData.kpis.paletesAExpedir) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((expedicaoData.kpis.paletesCarregados / expedicaoData.kpis.paletesAExpedir) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((expedicaoData.kpis.paletesCarregados / expedicaoData.kpis.paletesAExpedir) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          
+          <!-- Veículos (Movido para baixo e isolado) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:border-purple-300 transition-colors">
+                <div class="flex justify-between items-start mb-4">
+                  <h3 class="text-slate-500 text-sm font-semibold">Veículos nas Docas</h3>
+                  <div class="p-1.5 rounded-lg bg-purple-50 text-purple-600"><i data-lucide="door-open" class="w-4 h-4"></i></div>
+                </div>
+                <div>
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-3xl font-bold text-slate-800">${expedicaoData.kpis.veiculosDoca}</span>
+                    <span class="text-slate-500 text-sm">veículos</span>
+                  </div>
+                  <div class="text-xs mt-2 flex items-center font-medium text-slate-400">
+                    <i data-lucide="info" class="w-3.5 h-3.5 mr-1"></i> 2 aguardar pátio
+                  </div>
+                </div>
+              </div>
+          </div>
+          
+          <div class="flex flex-col gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
                 <div>
-                  <h3 class="font-bold text-slate-800">Ocupação do Stage-Out (Pulmão)</h3>
+                  <h3 class="font-bold text-slate-800">Ocupação dos Stage-Out</h3>
                   <p class="text-sm text-slate-500">Paletes consolidados prontos para embarque.</p>
                 </div>
                 <button class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Ver Mapa Completo</button>
               </div>
-              <div class="flex-1 flex flex-col gap-5 justify-center">
-                ${expedicaoData.stageOut.map(stage => `
-                  <div class="flex flex-col gap-2">
-                    <div class="flex justify-between items-end">
-                      <span class="text-sm font-bold text-slate-700">${stage.id}</span>
-                      <span class="text-sm font-bold text-slate-800">${stage.paletes} paletes</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
-                      <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${stage.color}" style="width: ${stage.ocupacao}%"></div>
-                      <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-[10px] font-bold ${stage.ocupacao > 50 ? 'text-white' : 'text-slate-600'}">${stage.ocupacao}%</span>
-                      </div>
-                    </div>
-                    <div class="flex justify-between text-[10px] text-slate-500 font-medium uppercase tracking-wider">
-                      <span class="${stage.ocupacao >= 90 ? 'text-red-500 font-bold' : ''}">${stage.status}</span>
-                      <span>capacidade</span>
-                    </div>
+              
+              <div class="flex-1 flex flex-col justify-end mt-2">
+                  <!-- Área de Barras -->
+                  <div class="flex items-end justify-between gap-1 md:gap-3 h-40 w-full px-1">
+                    ${expedicaoData.stageOut.map(stage => {
+                      // Transforma "Stage 01 (Rota Norte)" em "Stage-out 01"
+                      const label = stage.id.split(' (')[0].replace('Stage', 'Stage-out');
+                      return `
+                        <div class="relative flex-1 flex flex-col justify-end items-center h-full group">
+                          <!-- Tooltip -->
+                          <div class="absolute -top-10 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-md">
+                            ${stage.ocupacao}% Ocupado
+                            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                          </div>
+
+                          <!-- Barra Vertical -->
+                          <div class="w-full max-w-[45px] md:max-w-[60px] ${stage.color} rounded-t-xl transition-all duration-500 flex flex-col items-center justify-start pt-3 pb-1 shadow-[inset_0_-4px_6px_rgba(0,0,0,0.1)] hover:shadow-[0_0_15px_rgba(0,0,0,0.1)] cursor-pointer" style="height: ${Math.max(stage.ocupacao, 15)}%;">
+                            <span class="text-white font-black text-lg md:text-xl leading-none drop-shadow-sm">${stage.paletes}</span>
+                            <span class="text-white/80 text-[9px] md:text-[10px] font-bold uppercase mt-1">PL</span>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
                   </div>
-                `).join('')}
+                  
+                  <!-- Eixo X (Rótulos) -->
+                  <div class="flex justify-between items-start mt-4 pt-4 border-t border-slate-100 w-full gap-1 md:gap-3 px-1">
+                     ${expedicaoData.stageOut.map(stage => {
+                        const label = stage.id.split(' (')[0].replace('Stage', 'Stage-out');
+                        return `
+                          <div class="flex-1 text-center">
+                            <span class="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-tight block">${label.replace(' ', '<br>')}</span>
+                          </div>
+                        `;
+                     }).join('')}
+                  </div>
               </div>
             </div>
+            
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <h3 class="font-bold text-slate-800 mb-1">Painel de Carregamento (Docas)</h3>
               <p class="text-sm text-slate-500 mb-6">Status em tempo real das portas de expedição.</p>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 ${expedicaoData.docas.map(doca => `
                   <div class="p-4 rounded-lg border ${doca.status === 'Livre' ? 'border-dashed border-slate-300 bg-slate-50 opacity-70' : 'border-slate-200 bg-white shadow-sm'}">
                     <div class="flex justify-between items-center mb-3">
