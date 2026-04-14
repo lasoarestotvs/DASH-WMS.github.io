@@ -163,6 +163,48 @@
     </button>
   </div>
 
+  <!-- Modal Lista de Frota -->
+  <div id="modal-frota" class="hidden fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+      <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg shadow-sm"><i data-lucide="list-ordered" class="w-5 h-5"></i></div>
+          <div>
+            <h3 class="font-bold text-lg text-slate-800 leading-tight">Controlo de Frota</h3>
+            <p class="text-xs text-slate-500">Lista consolidada de veículos no dia</p>
+          </div>
+        </div>
+        <button onclick="fecharModalFrota()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-200 p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-0">
+        <table class="w-full text-left border-collapse">
+          <thead class="sticky top-0 bg-slate-100 shadow-sm z-10">
+            <tr class="border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
+              <th class="px-6 py-3 font-bold">Status</th>
+              <th class="px-6 py-3 font-bold">Veículo (Placa)</th>
+              <th class="px-6 py-3 font-bold">Rota</th>
+              <th class="px-6 py-3 font-bold">Loja Destino</th>
+              <th class="px-6 py-3 font-bold text-right">Registo (Hora)</th>
+            </tr>
+          </thead>
+          <tbody id="modal-frota-tbody" class="text-sm text-slate-700 divide-y divide-slate-100">
+            <!-- Injetado via JS -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center text-xs">
+        <span class="text-slate-500 font-medium">A apresentar amostra representativa de <span class="font-bold text-slate-700">45</span> veículos.</span>
+        <button class="px-4 py-2 bg-white border border-slate-300 rounded shadow-sm hover:bg-slate-100 font-semibold text-slate-700 transition-colors flex items-center gap-2">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // --- Mock Data ---
     const heatMapRacks = [
@@ -262,6 +304,7 @@
 
     const expedicaoData = {
       kpis: { paletesAExpedir: 1250, mediaPaletes30d: 1100, paletesProntos: 345, paletesDoca: 85, paletesCarregados: 820, veiculosDoca: 6, veiculosExpedidos: 14 },
+      frota: { total: 45, aguardandoPatio: 10, nasDocas: 4, emCarregamento: 7, carregados: 6, emViagem: 18 },
       stageOut: [
         { id: 'Stage 01 (Rota Norte)', ocupacao: 95, paletes: 45, status: 'Lotado', color: 'bg-red-500' },
         { id: 'Stage 02 (Rota Sul)', ocupacao: 65, paletes: 32, status: 'Normal', color: 'bg-blue-500' },
@@ -273,10 +316,27 @@
         { id: 'Stage 08 (Capital)', ocupacao: 90, paletes: 40, status: 'Lotado', color: 'bg-red-400' },
       ],
       docas: [
-        { id: 'Doca 01', veiculo: 'Caminhão Toco', placa: 'ABC-1234', rota: 'Rota Norte', progresso: 85, status: 'A Carregar' },
-        { id: 'Doca 02', veiculo: 'Carreta 3 Eixos', placa: 'XYZ-9876', rota: 'Hiper Centro', progresso: 100, status: 'Pronto a Sair' },
-        { id: 'Doca 03', veiculo: '-', placa: '-', rota: '-', progresso: 0, status: 'Livre' },
-        { id: 'Doca 04', veiculo: 'Caminhão Baú', placa: 'DEF-5678', rota: 'Rota Sul', progresso: 15, status: 'A Iniciar' },
+        { id: 'Box 01', veiculo: 'Caminhão Toco', placa: 'ABC-1234', rota: 'Rota Norte', loja: 'Loja 01 - Centro', progresso: 85, status: 'Em Carregamento', paletesNoBox: 20, paletesCarregados: 17 },
+        { id: 'Box 02', veiculo: 'Carreta 3 Eixos', placa: 'XYZ-9876', rota: 'Hiper Centro', loja: 'Loja 12 - Hiper', progresso: 100, status: 'Carregamento Finalizado', paletesNoBox: 28, paletesCarregados: 28 },
+        { id: 'Box 03', veiculo: '-', placa: '-', rota: '-', loja: '-', progresso: 0, status: 'Livre', paletesNoBox: 0, paletesCarregados: 0 },
+        { id: 'Box 04', veiculo: 'Caminhão Baú', placa: 'DEF-5678', rota: 'Rota Sul', loja: 'Loja 05 - Sul', progresso: 0, status: 'A Carregar', paletesNoBox: 15, paletesCarregados: 0 },
+        { id: 'Box 05', veiculo: 'Van', placa: 'GHI-9012', rota: 'Litoral', loja: 'Loja 08 - Praia', progresso: 45, status: 'Em Carregamento', paletesNoBox: 10, paletesCarregados: 4 },
+        { id: 'Box 06', veiculo: '-', placa: '-', rota: '-', loja: '-', progresso: 0, status: 'Livre', paletesNoBox: 0, paletesCarregados: 0 },
+        { id: 'Box 07', veiculo: 'Carreta Simples', placa: 'JKL-3456', rota: 'Interior', loja: 'Loja 22 - Vale', progresso: 10, status: 'Em Carregamento', paletesNoBox: 30, paletesCarregados: 3 },
+        { id: 'Box 08', veiculo: 'VUC', placa: 'MNO-7890', rota: 'Capital', loja: 'Loja 02 - Express', progresso: 100, status: 'Carregamento Finalizado', paletesNoBox: 8, paletesCarregados: 8 },
+      ],
+      listaFrotaCompleta: [
+        { status: 'Aguardando Pátio', veiculo: 'Carreta 3 Eixos (AAA-1111)', rota: 'Rota Norte', loja: 'Loja 01 - Centro', hora: '08:30 (Chegada)' },
+        { status: 'Aguardando Pátio', veiculo: 'Caminhão Toco (BBB-2222)', rota: 'Rota Sul', loja: 'Loja 05 - Bairro', hora: '09:15 (Chegada)' },
+        { status: 'Aguardando Pátio', veiculo: 'Caminhão Baú (CCC-3333)', rota: 'Capital', loja: 'Loja 02 - Express', hora: '10:05 (Chegada)' },
+        { status: 'Nas Docas', veiculo: 'Carreta Simples (DDD-4444)', rota: 'Interior', loja: 'Loja 22 - Vale', hora: '10:10 (Atracado)' },
+        { status: 'Nas Docas', veiculo: 'Van (EEE-5555)', rota: 'Litoral', loja: 'Loja 08 - Praia', hora: '10:30 (Atracado)' },
+        { status: 'Em Carregamento', veiculo: 'VUC (FFF-6666)', rota: 'Hiper Centro', loja: 'Loja 12 - Hiper', hora: '10:45 (Início)' },
+        { status: 'Em Carregamento', veiculo: 'Caminhão Toco (GGG-7777)', rota: 'Express', loja: 'Loja 10 - Sul', hora: '11:10 (Início)' },
+        { status: 'Carregados', veiculo: 'Carreta Frigorífica (HHH-8888)', rota: 'Norte Extremo', loja: 'Loja 15 - BR', hora: '13:00 (Fim)' },
+        { status: 'Carregados', veiculo: 'Toco (III-9999)', rota: 'Oeste', loja: 'Loja 03 - Shopping', hora: '13:20 (Fim)' },
+        { status: 'Em Viagem', veiculo: 'Carreta (JJJ-0000)', rota: 'Sul Extremo', loja: 'Loja 18 - Serra', hora: '07:30 (Saída)' },
+        { status: 'Em Viagem', veiculo: 'Van (KKK-1212)', rota: 'Express Madrugada', loja: 'Loja 24h - Centro', hora: '06:00 (Saída)' }
       ],
       veiculosCarregados: [
         { loja: 'Loja 12 - Centro', veiculo: 'Caminhão (XYZ-9876)', paletes: 28, hora: '16:15', status: 'Aguardar NFe', statusColor: 'text-amber-600 bg-amber-50 border-amber-200' },
@@ -588,57 +648,25 @@
             </div>
           </div>
           
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-              <div class="flex justify-between items-center mb-6">
-                <div>
-                  <h3 class="font-bold text-slate-800">Status das Linhas de Separação</h3>
-                  <p class="text-sm text-slate-500">Andamento das rotas para expedição.</p>
-                </div>
-                <button onclick="setMenu('separacao')" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Ver Detalhes</button>
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Progresso da Separação</h3>
+                <p class="text-sm text-slate-500 font-medium">Visualização circular de conclusão da demanda.</p>
               </div>
-              <div class="flex-1 flex flex-col justify-center gap-4">
-                ${separacaoData.ondas.slice(0,3).map(onda => `
-                  <div>
-                    <div class="flex justify-between text-xs font-semibold mb-1">
-                      <span class="text-slate-700">${onda.id}</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
-                      <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${onda.progresso === 100 ? 'bg-green-500' : 'bg-blue-600'}" style="width: ${onda.progresso}%"></div>
-                      <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-[10px] font-bold ${onda.progresso > 50 ? 'text-white' : 'text-slate-600'}">${onda.progresso}%</span>
-                      </div>
-                    </div>
-                  </div>
-                `).join('')}
+              <div class="bg-emerald-50/80 border border-emerald-100/80 rounded-2xl px-6 py-3 flex flex-col items-center justify-center shadow-sm">
+                <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.15em] mb-1">Aderência Demanda</span>
+                <div class="flex items-baseline gap-1">
+                  <span class="text-4xl font-black text-emerald-700">76</span>
+                  <span class="text-xl font-bold text-emerald-600">%</span>
+                </div>
               </div>
             </div>
-            
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-slate-800">Top Produtividade</h3>
-                <i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
-              </div>
-              <div class="space-y-4">
-                ${[...produtividadeTable].sort((a, b) => b.comparativo - a.comparativo).slice(0,3).map(op => `
-                  <div class="flex items-center justify-between border-b border-slate-50 pb-2 last:border-0 last:pb-0">
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shadow-inner">
-                        ${op.nome.split(' ').map(n=>n[0]).join('')}
-                      </div>
-                      <div>
-                        <p class="text-sm font-bold text-slate-700">${op.nome}</p>
-                        <p class="text-[10px] text-slate-500 uppercase">${op.funcao}</p>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <span class="block text-sm font-bold text-green-600">${op.caixasHora}</span>
-                      <span class="block text-[9px] text-slate-400">cx/h <span class="font-bold text-emerald-500 ml-1">+${op.comparativo}%</span></span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-              <button onclick="setMenu('equipe')" class="w-full mt-4 py-2 text-xs font-semibold text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">Ver Equipe Completa</button>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+              ${RadialMetric({ title: 'Lotes de Separação', current: 4212, total: 5200, unit: 'LOTES', percent: 81, theme: 'blue' })}
+              ${RadialMetric({ title: 'Itens (Produtos)', current: 62300, total: 84500, unit: 'ITENS', percent: 74, theme: 'indigo' })}
+              ${RadialMetric({ title: 'Volumes (Caixas)', current: 11400, total: 15700, unit: 'CX', percent: 73, theme: 'purple' })}
             </div>
           </div>
         </div>
@@ -973,7 +1001,7 @@
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               <div>
-                <h3 class="font-bold text-xl text-slate-800 mb-1">Progresso Consolidado</h3>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Progresso da Separação</h3>
                 <p class="text-sm text-slate-500 font-medium">Visualização circular de conclusão da demanda.</p>
               </div>
               <div class="bg-emerald-50/80 border border-emerald-100/80 rounded-2xl px-6 py-3 flex flex-col items-center justify-center shadow-sm">
@@ -1282,25 +1310,6 @@
             </div>
           </div>
           
-          <!-- Veículos (Movido para baixo e isolado) -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:border-purple-300 transition-colors">
-                <div class="flex justify-between items-start mb-4">
-                  <h3 class="text-slate-500 text-sm font-semibold">Veículos nas Docas</h3>
-                  <div class="p-1.5 rounded-lg bg-purple-50 text-purple-600"><i data-lucide="door-open" class="w-4 h-4"></i></div>
-                </div>
-                <div>
-                  <div class="flex items-baseline gap-1">
-                    <span class="text-3xl font-bold text-slate-800">${expedicaoData.kpis.veiculosDoca}</span>
-                    <span class="text-slate-500 text-sm">veículos</span>
-                  </div>
-                  <div class="text-xs mt-2 flex items-center font-medium text-slate-400">
-                    <i data-lucide="info" class="w-3.5 h-3.5 mr-1"></i> 2 aguardar pátio
-                  </div>
-                </div>
-              </div>
-          </div>
-          
           <div class="flex flex-col gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
               <div class="flex justify-between items-center mb-6">
@@ -1350,44 +1359,170 @@
             </div>
             
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-              <h3 class="font-bold text-slate-800 mb-1">Painel de Carregamento (Docas)</h3>
+              <h3 class="font-bold text-slate-800 mb-1">Ocupação das Docas (Box)</h3>
               <p class="text-sm text-slate-500 mb-6">Status em tempo real das portas de expedição.</p>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                ${expedicaoData.docas.map(doca => `
-                  <div class="p-4 rounded-lg border ${doca.status === 'Livre' ? 'border-dashed border-slate-300 bg-slate-50 opacity-70' : 'border-slate-200 bg-white shadow-sm'}">
-                    <div class="flex justify-between items-center mb-3">
-                      <span class="font-bold text-slate-800 flex items-center gap-1.5">
-                        <i data-lucide="door-open" class="w-4 h-4 ${doca.status === 'Livre' ? 'text-slate-400' : 'text-blue-600'}"></i> ${doca.id}
-                      </span>
-                      <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
-                        doca.status === 'A Carregar' ? 'bg-blue-100 text-blue-700' : 
-                        doca.status === 'Pronto a Sair' ? 'bg-emerald-100 text-emerald-700' : 
-                        doca.status === 'A Iniciar' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-500'
-                      }">${doca.status}</span>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                ${expedicaoData.docas.map(doca => {
+                  const statusColors = {
+                    'Em Carregamento': { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', icon: 'text-blue-500', bar: 'bg-blue-500', barBg: 'bg-blue-100' },
+                    'Carregamento Finalizado': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'text-emerald-500', bar: 'bg-emerald-500', barBg: 'bg-emerald-100' },
+                    'A Carregar': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: 'text-amber-500', bar: 'bg-amber-400', barBg: 'bg-amber-100' },
+                    'Livre': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', icon: 'text-slate-400', bar: 'bg-slate-300', barBg: 'bg-slate-100' }
+                  };
+                  const c = statusColors[doca.status];
+                  return `
+                  <div class="rounded-xl border ${doca.status === 'Livre' ? 'border-dashed border-slate-300 bg-slate-50/70' : 'border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow'} overflow-hidden flex flex-col">
+                    <div class="${doca.status !== 'Livre' ? c.bg : 'bg-transparent'} px-3 py-2 border-b ${doca.status !== 'Livre' ? c.border : 'border-slate-200/50'} flex flex-col items-start gap-2">
+                      <div class="flex items-center w-full">
+                        <span class="font-bold text-slate-800 text-base leading-none mt-0.5">${doca.id}</span>
+                      </div>
+                      <span class="text-[8px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-white ${c.text} shadow-sm border ${c.border}">${doca.status}</span>
                     </div>
-                    ${doca.status !== 'Livre' ? `
-                      <div class="mb-3">
-                        <p class="text-xs font-semibold text-slate-700 truncate">${doca.veiculo} (${doca.placa})</p>
-                        <p class="text-[10px] text-slate-500 truncate">Destino: ${doca.rota}</p>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <div class="flex-1 bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
-                          <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${doca.progresso === 100 ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${doca.progresso}%"></div>
-                          <div class="absolute inset-0 flex items-center justify-center">
-                            <span class="text-[10px] font-bold ${doca.progresso > 50 ? 'text-white' : 'text-slate-600'}">${doca.progresso}%</span>
-                          </div>
+                    <div class="p-3 flex-1 flex flex-col gap-3">
+                      ${doca.status !== 'Livre' ? `
+                        <div class="flex flex-col gap-1.5">
+                           <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                              <div class="overflow-hidden">
+                                 <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Veículo</p>
+                                 <p class="text-xs font-bold text-slate-700 truncate" title="${doca.placa}">${doca.placa}</p>
+                              </div>
+                           </div>
+                           <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                              <div class="overflow-hidden">
+                                 <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Loja</p>
+                                 <p class="text-xs font-bold text-slate-700 truncate" title="${doca.loja}">${doca.loja}</p>
+                              </div>
+                           </div>
                         </div>
-                      </div>
-                    ` : `
-                      <div class="flex flex-col items-center justify-center py-2">
-                        <span class="text-xs font-medium text-slate-400">Doca Disponível</span>
-                      </div>
-                    `}
+                        <div class="grid grid-cols-2 gap-2 bg-white rounded-lg">
+                           <div class="flex flex-col">
+                              <span class="text-[9px] text-slate-500 font-medium mb-0.5">Paletes no Box</span>
+                              <span class="text-xl font-black text-slate-800 leading-none">${doca.paletesNoBox}</span>
+                           </div>
+                           <div class="flex flex-col border-l border-slate-100 pl-2">
+                              <span class="text-[9px] text-slate-500 font-medium mb-0.5">Carregados</span>
+                              <span class="text-xl font-black ${c.text} leading-none">${doca.paletesCarregados}</span>
+                           </div>
+                        </div>
+                        <div class="mt-auto pt-2 border-t border-slate-50">
+                           <div class="flex justify-between text-[9px] font-bold mb-1.5">
+                              <span class="text-slate-400 uppercase tracking-wider">Progresso</span>
+                              <span class="${c.text}">${doca.progresso}%</span>
+                           </div>
+                           <div class="w-full ${c.barBg} rounded-full h-1.5 overflow-hidden shadow-inner">
+                              <div class="${c.bar} h-full rounded-full transition-all duration-1000 relative" style="width: ${doca.progresso}%">
+                                 <div class="absolute inset-0 bg-white/20"></div>
+                              </div>
+                           </div>
+                        </div>
+                      ` : `
+                        <div class="flex flex-col items-center justify-center py-4 opacity-60 h-full">
+                           <span class="text-xs font-bold text-slate-400">Box Disponível</span>
+                           <span class="text-[8px] text-slate-400 mt-1 uppercase tracking-widest">Aguardando Veículo</span>
+                        </div>
+                      `}
+                    </div>
                   </div>
-                `).join('')}
+                `;
+                }).join('')}
               </div>
             </div>
           </div>
+
+          <!-- Painel Global de Frota (Novo Formato) -->
+          ${(() => {
+            const pctPatio = Math.round((expedicaoData.frota.aguardandoPatio / expedicaoData.frota.total) * 100);
+            const pctDocas = Math.round((expedicaoData.frota.nasDocas / expedicaoData.frota.total) * 100);
+            const pctCarregando = Math.round((expedicaoData.frota.emCarregamento / expedicaoData.frota.total) * 100);
+            const pctCarregados = Math.round((expedicaoData.frota.carregados / expedicaoData.frota.total) * 100);
+            const pctViagem = Math.round((expedicaoData.frota.emViagem / expedicaoData.frota.total) * 100);
+            
+            return `
+            <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-8 mb-8 flex flex-col">
+              <div class="flex flex-col lg:flex-row gap-10">
+                <!-- Totalizador -->
+                <div class="flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-slate-100 pb-8 lg:pb-0 lg:pr-10 lg:w-1/4">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="p-2 bg-blue-50 rounded-lg text-blue-600 border border-blue-100"><i data-lucide="truck" class="w-5 h-5"></i></div>
+                    <h3 class="text-slate-500 text-sm font-bold uppercase tracking-widest">Status da Frota</h3>
+                  </div>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-7xl font-black text-slate-800 tracking-tighter">${expedicaoData.frota.total}</span>
+                    <span class="text-slate-500 text-sm font-medium uppercase tracking-wider">Veículos<br>no Dia</span>
+                  </div>
+                </div>
+
+                <!-- Pipeline / Distribuição -->
+                <div class="flex-1 flex flex-col justify-center">
+                  <div class="flex justify-between items-end mb-4">
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Distribuição do Fluxo (Pipeline)</p>
+                    <button onclick="abrirModalFrota()" class="text-xs text-blue-600 font-bold hover:text-blue-800 transition-colors focus:outline-none hover:underline flex items-center gap-1">
+                      Ver Lista Completa <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- Barra Segmentada -->
+                  <div class="w-full h-4 flex rounded-full overflow-hidden mb-6 bg-slate-100 border border-slate-200 shadow-inner gap-0.5">
+                     <div style="width: ${pctPatio}%" class="bg-slate-500 hover:opacity-80 transition-opacity cursor-help relative group">
+                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-md">${expedicaoData.frota.aguardandoPatio} no Pátio (${pctPatio}%)</div>
+                     </div>
+                     <div style="width: ${pctDocas}%" class="bg-amber-400 hover:opacity-80 transition-opacity cursor-help relative group">
+                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-md">${expedicaoData.frota.nasDocas} nas Docas (${pctDocas}%)</div>
+                     </div>
+                     <div style="width: ${pctCarregando}%" class="bg-blue-500 hover:opacity-80 transition-opacity cursor-help relative group">
+                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-md">${expedicaoData.frota.emCarregamento} Carregando (${pctCarregando}%)</div>
+                     </div>
+                     <div style="width: ${pctCarregados}%" class="bg-emerald-500 hover:opacity-80 transition-opacity cursor-help relative group">
+                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-md">${expedicaoData.frota.carregados} Carregados (${pctCarregados}%)</div>
+                     </div>
+                     <div style="width: ${pctViagem}%" class="bg-indigo-500 hover:opacity-80 transition-opacity cursor-help relative group">
+                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-md">${expedicaoData.frota.emViagem} em Viagem (${pctViagem}%)</div>
+                     </div>
+                  </div>
+
+                  <!-- Detalhamento da Legenda -->
+                  <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                     <div class="flex flex-col p-3 rounded-xl border border-transparent hover:border-slate-100 hover:bg-slate-50 transition-all">
+                       <div class="flex items-baseline gap-1 mb-1">
+                         <span class="text-slate-800 font-black text-3xl">${expedicaoData.frota.aguardandoPatio}</span>
+                         <span class="text-[10px] text-slate-400 font-bold">(${pctPatio}%)</span>
+                       </div>
+                       <span class="text-[9px] text-slate-500 uppercase font-bold flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-slate-500"></div> No Pátio</span>
+                     </div>
+                     <div class="flex flex-col p-3 rounded-xl border border-transparent hover:border-amber-100 hover:bg-amber-50/50 transition-all">
+                       <div class="flex items-baseline gap-1 mb-1">
+                         <span class="text-slate-800 font-black text-3xl">${expedicaoData.frota.nasDocas}</span>
+                         <span class="text-[10px] text-slate-400 font-bold">(${pctDocas}%)</span>
+                       </div>
+                       <span class="text-[9px] text-slate-500 uppercase font-bold flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div> Nas Docas</span>
+                     </div>
+                     <div class="flex flex-col p-3 rounded-xl border border-transparent hover:border-blue-100 hover:bg-blue-50/50 transition-all">
+                       <div class="flex items-baseline gap-1 mb-1">
+                         <span class="text-slate-800 font-black text-3xl">${expedicaoData.frota.emCarregamento}</span>
+                         <span class="text-[10px] text-slate-400 font-bold">(${pctCarregando}%)</span>
+                       </div>
+                       <span class="text-[9px] text-slate-500 uppercase font-bold flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Carregando</span>
+                     </div>
+                     <div class="flex flex-col p-3 rounded-xl border border-transparent hover:border-emerald-100 hover:bg-emerald-50/50 transition-all">
+                       <div class="flex items-baseline gap-1 mb-1">
+                         <span class="text-slate-800 font-black text-3xl">${expedicaoData.frota.carregados}</span>
+                         <span class="text-[10px] text-slate-400 font-bold">(${pctCarregados}%)</span>
+                       </div>
+                       <span class="text-[9px] text-slate-500 uppercase font-bold flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Carregados</span>
+                     </div>
+                     <div class="flex flex-col p-3 rounded-xl border border-transparent hover:border-indigo-100 hover:bg-indigo-50/50 transition-all">
+                       <div class="flex items-baseline gap-1 mb-1">
+                         <span class="text-slate-800 font-black text-3xl">${expedicaoData.frota.emViagem}</span>
+                         <span class="text-[10px] text-slate-400 font-bold">(${pctViagem}%)</span>
+                       </div>
+                       <span class="text-[9px] text-slate-500 uppercase font-bold flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-indigo-500"></div> Em Viagem</span>
+                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            `;
+          })()}
         </div>
       `;
     }
@@ -1747,6 +1882,54 @@
     document.addEventListener("DOMContentLoaded", () => {
       setMenu('separacao');
     });
+
+    // --- Funções do Modal de Frota ---
+    window.abrirModalFrota = function() {
+      const modal = document.getElementById('modal-frota');
+      const tbody = document.getElementById('modal-frota-tbody');
+      
+      const getStatusStyle = (status) => {
+        if (status === 'Aguardando Pátio') return 'bg-slate-100 text-slate-700 border-slate-200';
+        if (status === 'Nas Docas') return 'bg-amber-100 text-amber-700 border-amber-200';
+        if (status === 'Em Carregamento') return 'bg-blue-100 text-blue-700 border-blue-200';
+        if (status === 'Carregados') return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        if (status === 'Em Viagem') return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+      };
+
+      const rowsHtml = expedicaoData.listaFrotaCompleta.map(v => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4">
+            <span class="text-[9px] px-2 py-1 rounded font-bold uppercase tracking-wider border shadow-sm ${getStatusStyle(v.status)}">
+              ${v.status}
+            </span>
+          </td>
+          <td class="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
+            <i data-lucide="truck" class="w-4 h-4 text-slate-400"></i> ${v.veiculo}
+          </td>
+          <td class="px-6 py-4 text-xs font-semibold text-slate-600">${v.rota}</td>
+          <td class="px-6 py-4 text-xs text-slate-600"><span class="flex items-center gap-1.5"><i data-lucide="store" class="w-3.5 h-3.5 text-slate-400"></i> ${v.loja}</span></td>
+          <td class="px-6 py-4 text-xs font-mono text-right text-slate-500 tracking-tight">${v.hora}</td>
+        </tr>
+      `).join('');
+
+      tbody.innerHTML = rowsHtml;
+      
+      // Mostrar modal
+      modal.classList.remove('hidden');
+      // Forçar repaint para a transição funcionar
+      void modal.offsetWidth;
+      modal.classList.add('opacity-100');
+      lucide.createIcons({ root: modal });
+    };
+
+    window.fecharModalFrota = function() {
+      const modal = document.getElementById('modal-frota');
+      modal.classList.remove('opacity-100');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300); // Tempo da transição do Tailwind (duration-300)
+    };
   </script>
 </body>
 </html>
