@@ -170,7 +170,7 @@
         <div class="flex items-center gap-3">
           <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg shadow-sm"><i data-lucide="list-ordered" class="w-5 h-5"></i></div>
           <div>
-            <h3 class="font-bold text-lg text-slate-800 leading-tight">Controlo de Frota</h3>
+            <h3 class="font-bold text-lg text-slate-800 leading-tight">Controle de Frota</h3>
             <p class="text-xs text-slate-500">Lista consolidada de veículos no dia</p>
           </div>
         </div>
@@ -187,7 +187,7 @@
               <th class="px-6 py-3 font-bold">Veículo (Placa)</th>
               <th class="px-6 py-3 font-bold">Rota</th>
               <th class="px-6 py-3 font-bold">Loja Destino</th>
-              <th class="px-6 py-3 font-bold text-right">Registo (Hora)</th>
+              <th class="px-6 py-3 font-bold text-right">Registro (Hora)</th>
             </tr>
           </thead>
           <tbody id="modal-frota-tbody" class="text-sm text-slate-700 divide-y divide-slate-100">
@@ -461,7 +461,7 @@
       `;
     }
 
-    function ThermometerCard({ title, subtitle, value, unit, percentage, trend, trendValue, theme = 'blue', inverseTrend = false }) {
+    function ThermometerCard({ title, subtitle, value, total, unit, percentage, trend, trendValue, theme = 'blue', inverseTrend = false, menuTarget = null }) {
       const t = baseThemes[theme];
       let thermoTheme = theme;
       if (trend === 'up') {
@@ -475,20 +475,25 @@
       const trendClass = thermoTheme === 'green' ? 'text-green-600' : thermoTheme === 'red' ? 'text-red-500' : 'text-slate-500';
       const trendText = trendValue || `${percentage}% ${thermoTheme === 'red' ? 'nível crítico' : 'da meta'}`;
 
+      const clickableAttrs = menuTarget ? `onclick="setMenu('${menuTarget}')" role="button" tabindex="0"` : '';
+      const hoverClass = menuTarget ? 'cursor-pointer hover:shadow-md hover:border-blue-300 transition-all transform hover:-translate-y-1' : '';
+
       return `
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between relative overflow-hidden group">
+        <div ${clickableAttrs} class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between relative overflow-hidden group ${hoverClass}">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full opacity-[0.03] ${t.bar}"></div>
           <div class="flex flex-col justify-between h-full z-10 w-3/4">
             <div>
               <h3 class="text-slate-700 text-sm font-bold mb-0.5">${title}</h3>
               <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">${subtitle}</p>
             </div>
-            <div class="mt-4 mb-1">
-              <span class="text-3xl font-black ${t.text}">${value}</span>
-              <span class="text-slate-500 text-sm ml-1 font-medium">${unit}</span>
+            <div class="mt-4 mb-2">
+              <span class="text-3xl font-black ${t.text}">${safePct}%</span>
             </div>
-            <div class="flex items-center gap-1.5 text-xs font-semibold ${trendClass}">
-               ${trendIcon} ${trendText}
+            <div class="flex flex-col gap-0.5">
+              <span class="text-xs font-bold text-slate-700">${value} <span class="font-medium text-slate-500">de ${total}</span> <span class="text-[9px] text-slate-400 uppercase tracking-widest">${unit}</span></span>
+              <div class="flex items-center gap-1.5 text-[10px] font-semibold ${trendClass} mt-0.5">
+                 ${trendIcon} ${trendText}
+              </div>
             </div>
           </div>
           <div class="flex flex-col items-center justify-end h-28 w-12 pt-2 z-10">
@@ -586,22 +591,27 @@
       const baseEsperadas = recebimentoData.cargas.agendadas - recebimentoData.cargas.atrasadas;
       return `
         <div class="fade-in">
-          <div class="mb-6">
-            <h2 class="text-lg font-bold text-slate-800">Termômetro da Operação</h2>
-            <p class="text-sm text-slate-500">Resumo consolidado em tempo real das frentes operacionais do CD.</p>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${ThermometerCard({ title: 'Recebimento', subtitle: 'Cargas liberadas', value: recebimentoData.cargas.conferidas, unit: 'cargas', percentage: Math.round((recebimentoData.cargas.conferidas / baseEsperadas) * 100), theme: 'blue', trend: 'up', trendValue: '+5% vs ontem' })}
-            ${ThermometerCard({ title: 'Separação', subtitle: 'Volume Concluído', value: '11.4k', unit: 'cx', percentage: 72, theme: 'purple', trend: 'down', trendValue: '-3% vs ontem' })}
-            ${ThermometerCard({ title: 'Expedição', subtitle: 'Paletes Carregados', value: expedicaoData.kpis.paletesCarregados, unit: 'paletes', percentage: 82, theme: 'amber', trend: 'up', trendValue: '+15% vs ontem' })}
-            ${ThermometerCard({ title: 'Produtividade', subtitle: 'Tarefas Concluídas', value: '4.8k', unit: 'tarefas', percentage: 85, theme: 'indigo', trend: 'none', trendValue: 'de 5.6k gerado' })}
+          <!-- Card de Agrupamento do Termómetro -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Termometro da Operaçao</h3>
+                <p class="text-sm text-slate-500">Resumo em tempo real das frentes operacionais</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${ThermometerCard({ title: 'Recebimento', subtitle: 'Cargas liberadas', value: recebimentoData.cargas.conferidas, total: baseEsperadas, unit: 'cargas', percentage: Math.round((recebimentoData.cargas.conferidas / baseEsperadas) * 100), theme: 'blue', trend: 'up', trendValue: '+5% vs ontem' })}
+              ${ThermometerCard({ title: 'Separação', subtitle: 'Volume Concluído', value: '11.4k', total: '15.7k', unit: 'cx', percentage: 72, theme: 'purple', trend: 'down', trendValue: '-3% vs ontem' })}
+              ${ThermometerCard({ title: 'Expedição', subtitle: 'Paletes Carregados', value: expedicaoData.kpis.paletesCarregados, total: expedicaoData.kpis.paletesAExpedir, unit: 'paletes', percentage: Math.round((expedicaoData.kpis.paletesCarregados / expedicaoData.kpis.paletesAExpedir) * 100), theme: 'amber', trend: 'up', trendValue: '+15% vs ontem' })}
+              ${ThermometerCard({ title: 'Produtividade', subtitle: 'Tarefas Concluídas', value: '4.8k', total: '5.6k', unit: 'tarefas', percentage: 85, theme: 'indigo', trend: 'none', trendValue: 'Estável' })}
+            </div>
           </div>
           
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8 hover:shadow-md transition-all group relative">
             <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
               <div>
-                <h3 class="font-bold text-xl text-slate-800 mb-1">Status Físico dos Paletes Conferidos</h3>
-                <p class="text-sm text-slate-500">Fluxo logístico após a conferência inicial.</p>
+                <h3 class="font-bold text-xl text-slate-800 mb-1 flex items-center gap-3">Status Físico dos Paletes Conferidos <span onclick="setMenu('recebimento')" class="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Ver Detalhes</span></h3>
+                <p class="text-sm text-slate-500">Localização dos paletes após a conferência de recebimento.</p>
               </div>
               <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
                 <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mb-0.5">Total Conferidos</p>
@@ -664,11 +674,11 @@
             </div>
           </div>
           
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 hover:shadow-md transition-all group relative">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               <div>
-                <h3 class="font-bold text-xl text-slate-800 mb-1">Progresso da Separação</h3>
-                <p class="text-sm text-slate-500 font-medium">Visualização circular de conclusão da demanda.</p>
+                <h3 class="font-bold text-xl text-slate-800 mb-1 flex items-center gap-3">Progresso da Separação <span onclick="setMenu('separacao')" class="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Ver Detalhes</span></h3>
+                <p class="text-sm text-slate-500 font-medium">Visualização consolidada da situação da separação.</p>
               </div>
               <div class="bg-emerald-50/80 border border-emerald-100/80 rounded-2xl px-6 py-3 flex flex-col items-center justify-center shadow-sm">
                 <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.15em] mb-1">Aderência Demanda</span>
@@ -685,12 +695,81 @@
               ${RadialMetric({ title: 'Volumes (Caixas)', current: 11400, total: 15700, unit: 'CX', percent: 73, theme: 'purple' })}
             </div>
           </div>
+
+          <!-- BLOCO UNIFICADO: Total a Expedir + Fluxo de Paletes (Visão Geral) -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8 hover:shadow-md transition-all group relative">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1 flex items-center gap-3">Paletes a Expedir <span onclick="setMenu('expedicao')" class="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Ver Detalhes</span></h3>
+                <p class="text-sm text-slate-500">Acompanhamento do fluxo de consolidação desde o término da separação até ao embarque.</p>
+              </div>
+              <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
+                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mb-0.5">Total a Expedir</p>
+                <div class="flex items-baseline justify-center gap-1">
+                  <span class="text-3xl font-black text-indigo-700">${expedicaoData.kpis.paletesAExpedir.toLocaleString('pt-BR')}</span>
+                  <span class="text-xs font-bold text-indigo-500">PL</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+              <!-- Item 1: Stage-Out -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes no<br>Stage-Out</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-amber-500">${expedicaoData.kpis.paletesProntos}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-amber-400" style="width: ${(expedicaoData.kpis.paletesProntos / expedicaoData.kpis.paletesAExpedir) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((expedicaoData.kpis.paletesProntos / expedicaoData.kpis.paletesAExpedir) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((expedicaoData.kpis.paletesProntos / expedicaoData.kpis.paletesAExpedir) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 2: Na Doca -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes na<br>Doca</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-blue-600">${expedicaoData.kpis.paletesDoca}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-blue-500" style="width: ${(expedicaoData.kpis.paletesDoca / expedicaoData.kpis.paletesAExpedir) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((expedicaoData.kpis.paletesDoca / expedicaoData.kpis.paletesAExpedir) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((expedicaoData.kpis.paletesDoca / expedicaoData.kpis.paletesAExpedir) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3: Carregados -->
+              <div class="flex flex-col">
+                <div class="flex justify-between mb-3 items-end">
+                  <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes<br>Carregados</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-green-600">${expedicaoData.kpis.paletesCarregados}</span>
+                    <span class="text-xs text-slate-400 font-bold ml-1">PL</span>
+                  </div>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-4 relative overflow-hidden shadow-inner">
+                  <div class="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 bg-green-500" style="width: ${(expedicaoData.kpis.paletesCarregados / expedicaoData.kpis.paletesAExpedir) * 100}%"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[10px] font-bold ${((expedicaoData.kpis.paletesCarregados / expedicaoData.kpis.paletesAExpedir) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((expedicaoData.kpis.paletesCarregados / expedicaoData.kpis.paletesAExpedir) * 100)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       `;
     }
 
     function renderRecebimento() {
-      // Cálculos de Acuracidade
       const totalConferidas = recebimentoData.cargas.conferidas;
       const acuracidadePct = Math.round((recebimentoData.cargas.semDivergencia / totalConferidas) * 100);
       const faltaPct = 100 - acuracidadePct;
@@ -707,7 +786,6 @@
             </div>
             
             <div class="flex flex-col lg:flex-row gap-6">
-
               <!-- Left Side: Agendado, Atrasadas, No Show -->
               <div class="flex flex-col gap-4 lg:w-1/3">
                 <!-- Total Agendado -->
@@ -748,7 +826,6 @@
                 <h4 class="text-slate-500 text-sm font-bold uppercase tracking-widest mb-10">Funil das Cargas de Recebimento</h4>
 
                 <div class="flex justify-center items-end gap-2 md:gap-4 relative w-full max-w-2xl">
-
                   <!-- Card 1: Recebidas -->
                   <div class="relative bg-white border-2 border-blue-200 rounded-xl p-4 md:p-6 flex flex-col items-center flex-1 shadow-sm mt-4">
                     <div class="absolute -top-5 left-1/2 -translate-x-1/2 bg-blue-50 border-[3px] border-white rounded-full p-2 text-blue-600 shadow-sm">
@@ -787,10 +864,8 @@
                     <p class="text-green-600 text-[10px] md:text-[11px] font-bold uppercase tracking-widest mt-1">Armazenadas</p>
                     <p class="text-slate-400 text-[9px] font-medium mt-1">de ${recebimentoData.cargas.conferidas} conferidas</p>
                   </div>
-
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -819,7 +894,7 @@
             <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
               <div>
                 <h3 class="font-bold text-xl text-slate-800 mb-1">Status Físico dos Paletes Conferidos</h3>
-                <p class="text-sm text-slate-500">Fluxo logístico após a conferência inicial.</p>
+                <p class="text-sm text-slate-500">Localização dos paletes após a conferência de recebimento.</p>
               </div>
               <div class="bg-indigo-50 border border-indigo-100 rounded-xl px-6 py-3 text-center shadow-sm flex flex-col justify-center min-w-[140px]">
                 <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mb-0.5">Total Conferidos</p>
@@ -959,7 +1034,7 @@
                         <span class="font-bold text-slate-800">${recebimentoData.cargas.conferidas}</span>
                     </div>
                     <div class="flex justify-between text-sm items-center">
-                        <span class="text-green-700 font-bold">Conferidas</span>
+                        <span class="text-green-700 font-bold">Conferidos</span>
                         <span class="font-bold text-green-600 text-lg">${recebimentoData.cargas.semDivergencia}</span>
                     </div>
                     <div class="flex justify-between text-sm border-t border-slate-200 pt-3 items-center">
@@ -996,7 +1071,6 @@
                </div>
             </div>
           </div>
-
         </div>
       `;
     }
@@ -1018,7 +1092,7 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               <div>
                 <h3 class="font-bold text-xl text-slate-800 mb-1">Progresso da Separação</h3>
-                <p class="text-sm text-slate-500 font-medium">Visualização circular de conclusão da demanda.</p>
+                <p class="text-sm text-slate-500 font-medium">Visualização consolidada da situação da separação.</p>
               </div>
               <div class="bg-emerald-50/80 border border-emerald-100/80 rounded-2xl px-6 py-3 flex flex-col items-center justify-center shadow-sm">
                 <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.15em] mb-1">Aderência Demanda</span>
@@ -1896,7 +1970,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      setMenu('separacao');
+      setMenu('dashboard');
     });
 
     // --- Funções do Modal de Frota ---
