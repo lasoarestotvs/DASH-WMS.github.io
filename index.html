@@ -346,6 +346,28 @@
       ]
     };
 
+    const estoqueData = {
+      enderecos: {
+        total: 15000,
+        ocupados: 9750, // 65%
+        reservados: 1500, // 10%
+        bloqueados: 750,  // 5%
+        disponiveis: 3000 // 20%
+      },
+      ruas: [
+        { id: '01', ocupacao: 92, tipo: 'Secos' },
+        { id: '02', ocupacao: 88, tipo: 'Secos' },
+        { id: '03', ocupacao: 75, tipo: 'Secos' },
+        { id: '04', ocupacao: 60, tipo: 'Secos' },
+        { id: '05', ocupacao: 95, tipo: 'Refrigerado' },
+        { id: '06', ocupacao: 45, tipo: 'Refrigerado' },
+        { id: '07', ocupacao: 80, tipo: 'Congelado' },
+        { id: '08', ocupacao: 70, tipo: 'Congelado' },
+        { id: '09', ocupacao: 30, tipo: 'Quarentena' },
+        { id: '10', ocupacao: 100, tipo: 'Alto Risco' }
+      ]
+    };
+
     // --- Sistema de Temas e Componentes Base ---
     const baseThemes = {
       blue: { border: 'border-blue-600', bg: 'bg-blue-50', text: 'text-blue-600', bar: 'bg-blue-500', bulb: 'bg-blue-600' },
@@ -486,17 +508,20 @@
               <h3 class="text-slate-700 text-sm font-bold mb-0.5">${title}</h3>
               <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">${subtitle}</p>
             </div>
-            <div class="mt-4 mb-2">
-              <span class="text-3xl font-black ${t.text}">${safePct}%</span>
+            <div class="mt-3 mb-2">
+              <span class="text-4xl font-black ${t.text}">${safePct}%</span>
             </div>
-            <div class="flex flex-col gap-0.5">
-              <span class="text-xs font-bold text-slate-700">${value} <span class="font-medium text-slate-500">de ${total}</span> <span class="text-[9px] text-slate-400 uppercase tracking-widest">${unit}</span></span>
-              <div class="flex items-center gap-1.5 text-[10px] font-semibold ${trendClass} mt-0.5">
+            <div class="flex flex-col gap-2 mt-auto">
+              <div class="flex items-baseline gap-1">
+                <span class="text-sm font-bold text-slate-700">${value}</span>
+                <span class="text-[10px] font-medium text-slate-500 uppercase">de ${total} ${unit}</span>
+              </div>
+              <div class="inline-flex items-center justify-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-slate-50 border border-slate-100 ${trendClass} w-max">
                  ${trendIcon} ${trendText}
               </div>
             </div>
           </div>
-          <div class="flex flex-col items-center justify-end h-28 w-12 pt-2 z-10">
+          <div class="flex flex-col items-center justify-end h-28 w-12 pt-2 pb-3 z-10">
             <div class="w-3.5 flex-1 bg-slate-100 rounded-t-full relative shadow-inner border border-slate-200/50 flex flex-col justify-end overflow-hidden z-0">
                <div class="absolute inset-0 flex flex-col justify-between py-1 opacity-20">
                  <div class="w-full h-[1px] bg-slate-800"></div><div class="w-full h-[1px] bg-slate-800"></div>
@@ -595,7 +620,7 @@
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
               <div>
-                <h3 class="font-bold text-xl text-slate-800 mb-1">Termometro da Operaçao</h3>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Termômetro da Operação</h3>
                 <p class="text-sm text-slate-500">Resumo em tempo real das frentes operacionais</p>
               </div>
             </div>
@@ -622,7 +647,6 @@
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
-              <!-- Item 1 -->
               <div class="flex flex-col">
                 <div class="flex justify-between mb-3 items-end">
                   <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Aguardando na Doca</span>
@@ -638,7 +662,6 @@
                   </div>
                 </div>
               </div>
-              <!-- Item 2 -->
               <div class="flex flex-col relative">
                 <div class="flex justify-between mb-3 items-end">
                   <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Na Rua (Em Movimentação)</span>
@@ -655,7 +678,6 @@
                 </div>
                 ${recebimentoData.paletes.emTransito > 30 ? '<div class="absolute -bottom-6 left-0 text-[10px] font-bold text-red-500 flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta de Estangamento de Pátio</div>' : ''}
               </div>
-              <!-- Item 3 -->
               <div class="flex flex-col">
                 <div class="flex justify-between mb-3 items-end">
                   <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Armazenados (Destino)</span>
@@ -696,7 +718,6 @@
             </div>
           </div>
 
-          <!-- BLOCO UNIFICADO: Total a Expedir + Fluxo de Paletes (Visão Geral) -->
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8 hover:shadow-md transition-all group relative">
             <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
               <div>
@@ -713,7 +734,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
-              <!-- Item 1: Stage-Out -->
               <div class="flex flex-col">
                 <div class="flex justify-between mb-3 items-end">
                   <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes no<br>Stage-Out</span>
@@ -729,8 +749,6 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Item 2: Na Doca -->
               <div class="flex flex-col">
                 <div class="flex justify-between mb-3 items-end">
                   <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes na<br>Doca</span>
@@ -746,8 +764,6 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Item 3: Carregados -->
               <div class="flex flex-col">
                 <div class="flex justify-between mb-3 items-end">
                   <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paletes<br>Carregados</span>
@@ -765,6 +781,148 @@
               </div>
             </div>
           </div>
+        </div>
+      `;
+    }
+
+    function renderEstoque() {
+      const e = estoqueData.enderecos;
+      const pctOcupados = Math.round((e.ocupados / e.total) * 100);
+      const pctReservados = Math.round((e.reservados / e.total) * 100);
+      const pctBloqueados = Math.round((e.bloqueados / e.total) * 100);
+      const pctDisponiveis = Math.round((e.disponiveis / e.total) * 100);
+
+      const getOcupacaoColor = (pct) => {
+        if (pct >= 90) return 'bg-red-500';
+        if (pct >= 75) return 'bg-amber-400';
+        if (pct >= 50) return 'bg-blue-500';
+        return 'bg-emerald-500';
+      };
+      
+      const getOcupacaoTextColor = (pct) => {
+        if (pct >= 90) return 'text-red-600';
+        if (pct >= 75) return 'text-amber-600';
+        if (pct >= 50) return 'text-blue-600';
+        return 'text-emerald-600';
+      };
+
+      return `
+        <div class="fade-in">
+          <div class="mb-6">
+            <h2 class="text-lg font-bold text-slate-800">Gestão de Estoque e Endereçamentos</h2>
+            <p class="text-sm text-slate-500">Monitorização da capacidade volumétrica e status dos locais de armazenagem.</p>
+          </div>
+          
+          <!-- KPIs Superiores -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            ${KpiCard({ title: 'Total de Endereços', value: (e.total/1000).toFixed(1), unit: 'k', icon: 'layout-grid', trend: 'none', trendValue: 'Capacidade Máxima', theme: 'indigo' })}
+            ${KpiCard({ title: 'Taxa de Ocupação', value: pctOcupados, unit: '%', icon: 'pie-chart', trend: 'up', trendValue: '+2% vs mês ant.', theme: pctOcupados > 85 ? 'red' : 'blue' })}
+            ${KpiCard({ title: 'Endereços Bloqueados', value: e.bloqueados, unit: 'locais', icon: 'lock', trend: 'down', trendValue: 'Inventário rotativo', alert: e.bloqueados > 1000, theme: 'red' })}
+            ${KpiCard({ title: 'Capacidade Livre', value: (e.disponiveis/1000).toFixed(1), unit: 'k', icon: 'box-select', trend: 'down', trendValue: 'Atenção reposição', theme: 'green' })}
+          </div>
+
+          <!-- Barra Segmentada de Status dos Endereços -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8 flex flex-col">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="p-2 bg-slate-100 text-slate-600 rounded-lg shadow-sm"><i data-lucide="layers" class="w-5 h-5"></i></div>
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 leading-tight">Distribuição de Status Físico</h3>
+                <p class="text-sm text-slate-500">Visão consolidada de como os ${e.total.toLocaleString('pt-BR')} endereços estão distribuídos neste momento.</p>
+              </div>
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center">
+              <!-- Barra Visual -->
+              <div class="w-full h-8 sm:h-12 flex rounded-xl overflow-hidden mb-6 bg-slate-100 border border-slate-200 shadow-inner gap-1">
+                 <div style="width: ${pctOcupados}%" class="bg-blue-600 hover:opacity-90 transition-opacity cursor-help relative group flex items-center justify-center">
+                    ${pctOcupados > 10 ? `<span class="text-white font-bold text-xs sm:text-sm drop-shadow-md">${pctOcupados}%</span>` : ''}
+                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-lg">Ocupados: ${e.ocupados.toLocaleString('pt-BR')}</div>
+                 </div>
+                 <div style="width: ${pctReservados}%" class="bg-amber-400 hover:opacity-90 transition-opacity cursor-help relative group flex items-center justify-center">
+                    ${pctReservados > 5 ? `<span class="text-amber-900 font-bold text-xs sm:text-sm drop-shadow-sm">${pctReservados}%</span>` : ''}
+                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-lg">Reservados: ${e.reservados.toLocaleString('pt-BR')}</div>
+                 </div>
+                 <div style="width: ${pctBloqueados}%" class="bg-red-500 hover:opacity-90 transition-opacity cursor-help relative group flex items-center justify-center">
+                    ${pctBloqueados > 5 ? `<span class="text-white font-bold text-xs sm:text-sm drop-shadow-md">${pctBloqueados}%</span>` : ''}
+                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-lg">Bloqueados: ${e.bloqueados.toLocaleString('pt-BR')}</div>
+                 </div>
+                 <div style="width: ${pctDisponiveis}%" class="bg-emerald-400 hover:opacity-90 transition-opacity cursor-help relative group flex items-center justify-center">
+                    ${pctDisponiveis > 10 ? `<span class="text-emerald-900 font-bold text-xs sm:text-sm drop-shadow-sm">${pctDisponiveis}%</span>` : ''}
+                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none shadow-lg">Disponíveis: ${e.disponiveis.toLocaleString('pt-BR')}</div>
+                 </div>
+              </div>
+
+              <!-- Legenda Detalhada -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-blue-100 hover:bg-blue-50/50 transition-all">
+                   <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-blue-600 shadow-sm"></div> Ocupados</span>
+                   <div class="flex items-baseline gap-1.5">
+                     <span class="text-slate-800 font-black text-2xl">${e.ocupados.toLocaleString('pt-BR')}</span>
+                     <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                 </div>
+                 <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-amber-100 hover:bg-amber-50/50 transition-all">
+                   <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-amber-400 shadow-sm"></div> Reservados (Inbound)</span>
+                   <div class="flex items-baseline gap-1.5">
+                     <span class="text-slate-800 font-black text-2xl">${e.reservados.toLocaleString('pt-BR')}</span>
+                     <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                 </div>
+                 <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-red-100 hover:bg-red-50/50 transition-all">
+                   <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-red-500 shadow-sm"></div> Bloqueados (Avaria/Inv.)</span>
+                   <div class="flex items-baseline gap-1.5">
+                     <span class="text-slate-800 font-black text-2xl">${e.bloqueados.toLocaleString('pt-BR')}</span>
+                     <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                 </div>
+                 <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-emerald-100 hover:bg-emerald-50/50 transition-all">
+                   <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-emerald-400 shadow-sm"></div> Disponíveis (Vazios)</span>
+                   <div class="flex items-baseline gap-1.5">
+                     <span class="text-slate-800 font-black text-2xl">${e.disponiveis.toLocaleString('pt-BR')}</span>
+                     <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ocupação por Rua -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 flex flex-col">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 mb-1">Status de Ocupação por Rua</h3>
+                <p class="text-sm text-slate-500">Mapeamento de capacidade detalhado por corredor de armazenagem.</p>
+              </div>
+              <div class="flex gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Livre</span>
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Normal</span>
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div> Alto</span>
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-red-500"></div> Crítico/Lotado</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              ${estoqueData.ruas.map(rua => {
+                const bg = getOcupacaoColor(rua.ocupacao);
+                const txt = getOcupacaoTextColor(rua.ocupacao);
+                return `
+                  <div class="border border-slate-200 rounded-xl p-4 flex flex-col bg-slate-50/50 hover:bg-white hover:shadow-md transition-all cursor-default">
+                    <div class="flex justify-between items-start mb-4">
+                      <div class="flex flex-col">
+                        <span class="text-sm font-black text-slate-800 uppercase tracking-tight">Rua ${rua.id}</span>
+                        <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">${rua.tipo}</span>
+                      </div>
+                      <span class="text-lg font-black ${txt}">${rua.ocupacao}%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2 mt-auto overflow-hidden shadow-inner">
+                      <div class="${bg} h-full rounded-full transition-all duration-1000" style="width: ${rua.ocupacao}%"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
         </div>
       `;
     }
@@ -1845,6 +2003,7 @@
 
     const menuItemsConfig = [
       { id: 'dashboard', label: 'Visão Geral', icon: 'layout-dashboard', render: renderVisaoGeral },
+      { id: 'estoque', label: 'Estoque', icon: 'boxes', render: renderEstoque },
       { id: 'recebimento', label: 'Recebimento', icon: 'arrow-down-to-line', render: renderRecebimento },
       { id: 'separacao', label: 'Separação', icon: 'shopping-cart', render: renderSeparacao },
       { id: 'expedicao', label: 'Expedição', icon: 'truck', render: renderExpedicao },
