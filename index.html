@@ -354,17 +354,28 @@
         bloqueados: 750,  // 5%
         disponiveis: 3000 // 20%
       },
+      tiposRestricao: {
+        contaminante: 1500,
+        contaminavel: 4500,
+        neutro: 9000
+      },
+      produtos: {
+        valorTotal: 14500000,
+        paletes: 8450,
+        volumes: 450200,
+        skus: 4230
+      },
       ruas: [
-        { id: '01', ocupacao: 92, tipo: 'Secos' },
-        { id: '02', ocupacao: 88, tipo: 'Secos' },
-        { id: '03', ocupacao: 75, tipo: 'Secos' },
-        { id: '04', ocupacao: 60, tipo: 'Secos' },
-        { id: '05', ocupacao: 95, tipo: 'Refrigerado' },
-        { id: '06', ocupacao: 45, tipo: 'Refrigerado' },
-        { id: '07', ocupacao: 80, tipo: 'Congelado' },
-        { id: '08', ocupacao: 70, tipo: 'Congelado' },
-        { id: '09', ocupacao: 30, tipo: 'Quarentena' },
-        { id: '10', ocupacao: 100, tipo: 'Alto Risco' }
+        { id: '01', ocupacao: 92, tipo: 'Secos', total: 450, ocupados: 414, pulmao: { ocupados: 300, total: 320 }, apanha: { ocupados: 114, total: 130 } },
+        { id: '02', ocupacao: 88, tipo: 'Secos', total: 450, ocupados: 396, pulmao: { ocupados: 280, total: 320 }, apanha: { ocupados: 116, total: 130 } },
+        { id: '03', ocupacao: 75, tipo: 'Secos', total: 400, ocupados: 300, pulmao: { ocupados: 200, total: 280 }, apanha: { ocupados: 100, total: 120 } },
+        { id: '04', ocupacao: 60, tipo: 'Secos', total: 400, ocupados: 240, pulmao: { ocupados: 150, total: 280 }, apanha: { ocupados: 90, total: 120 } },
+        { id: '05', ocupacao: 95, tipo: 'Refrigerado', total: 300, ocupados: 285, pulmao: { ocupados: 200, total: 210 }, apanha: { ocupados: 85, total: 90 } },
+        { id: '06', ocupacao: 45, tipo: 'Refrigerado', total: 300, ocupados: 135, pulmao: { ocupados: 90, total: 210 }, apanha: { ocupados: 45, total: 90 } },
+        { id: '07', ocupacao: 80, tipo: 'Congelado', total: 200, ocupados: 160, pulmao: { ocupados: 120, total: 140 }, apanha: { ocupados: 40, total: 60 } },
+        { id: '08', ocupacao: 70, tipo: 'Congelado', total: 200, ocupados: 140, pulmao: { ocupados: 100, total: 140 }, apanha: { ocupados: 40, total: 60 } },
+        { id: '09', ocupacao: 30, tipo: 'Quarentena', total: 100, ocupados: 30, pulmao: { ocupados: 30, total: 100 }, apanha: { ocupados: 0, total: 0 } },
+        { id: '10', ocupacao: 100, tipo: 'Alto Risco', total: 50, ocupados: 50, pulmao: { ocupados: 30, total: 30 }, apanha: { ocupados: 20, total: 20 } }
       ]
     };
 
@@ -676,7 +687,6 @@
                     <span class="text-[10px] font-bold ${((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100)}%</span>
                   </div>
                 </div>
-                ${recebimentoData.paletes.emTransito > 30 ? '<div class="absolute -bottom-6 left-0 text-[10px] font-bold text-red-500 flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta de Estangamento de Pátio</div>' : ''}
               </div>
               <div class="flex flex-col">
                 <div class="flex justify-between mb-3 items-end">
@@ -787,46 +797,178 @@
 
     function renderEstoque() {
       const e = estoqueData.enderecos;
+      const tr = estoqueData.tiposRestricao;
+      
       const pctOcupados = Math.round((e.ocupados / e.total) * 100);
       const pctReservados = Math.round((e.reservados / e.total) * 100);
       const pctBloqueados = Math.round((e.bloqueados / e.total) * 100);
       const pctDisponiveis = Math.round((e.disponiveis / e.total) * 100);
 
+      const totalTr = tr.contaminante + tr.contaminavel + tr.neutro;
+      const pctContaminante = Math.round((tr.contaminante / totalTr) * 100);
+      const pctContaminavel = Math.round((tr.contaminavel / totalTr) * 100);
+      const pctNeutro = Math.round((tr.neutro / totalTr) * 100);
+
       const getOcupacaoColor = (pct) => {
-        if (pct >= 90) return 'bg-red-500';
-        if (pct >= 75) return 'bg-amber-400';
-        if (pct >= 50) return 'bg-blue-500';
+        if (pct === 100) return 'bg-red-500';
+        if (pct >= 81) return 'bg-purple-500';
+        if (pct >= 51) return 'bg-amber-400';
+        if (pct >= 31) return 'bg-blue-500';
         return 'bg-emerald-500';
       };
       
       const getOcupacaoTextColor = (pct) => {
-        if (pct >= 90) return 'text-red-600';
-        if (pct >= 75) return 'text-amber-600';
-        if (pct >= 50) return 'text-blue-600';
+        if (pct === 100) return 'text-red-600';
+        if (pct >= 81) return 'text-purple-600';
+        if (pct >= 51) return 'text-amber-600';
+        if (pct >= 31) return 'text-blue-600';
         return 'text-emerald-600';
       };
 
       return `
         <div class="fade-in">
-          <div class="mb-6">
-            <h2 class="text-lg font-bold text-slate-800">Gestão de Estoque e Endereçamentos</h2>
-            <p class="text-sm text-slate-500">Monitorização da capacidade volumétrica e status dos locais de armazenagem.</p>
+          <!-- KPIs Superiores Agrupados -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-8 overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 bg-white">
+              <h3 class="font-bold text-lg text-slate-800 mb-1">Status do Estoque Atual</h3>
+              <p class="text-sm text-slate-500">Visão consolidada do valor financeiro e volume físico dos produtos armazenados.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+              
+              <!-- Valor do Estoque -->
+              <div class="p-6 flex flex-col justify-center relative group hover:bg-emerald-50/50 transition-colors">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="circle-dollar-sign" class="w-4 h-4"></i></div>
+                  <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Valor do Estoque</span>
+                </div>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span class="text-sm font-bold text-slate-400">R$</span>
+                  <span class="text-4xl font-black text-slate-800">14.5</span>
+                  <span class="text-sm font-bold text-slate-400">M</span>
+                </div>
+                <div class="text-xs font-semibold text-blue-600 mt-2">
+                  +R$ 120k vs ontem
+                </div>
+              </div>
+
+              <!-- Total em Paletes -->
+              <div class="p-6 flex flex-col justify-center relative group hover:bg-blue-50/50 transition-colors">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="layers" class="w-4 h-4"></i></div>
+                  <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Total em Paletes</span>
+                </div>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span class="text-4xl font-black text-slate-800">8.4</span>
+                  <span class="text-sm font-bold text-slate-400">k</span>
+                </div>
+                <div class="text-xs font-semibold text-blue-600 mt-2">
+                  +0.5% vs ontem
+                </div>
+              </div>
+
+              <!-- Total em Volumes -->
+              <div class="p-6 flex flex-col justify-center relative group hover:bg-purple-50/50 transition-colors">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i data-lucide="package" class="w-4 h-4"></i></div>
+                  <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Total em Volumes</span>
+                </div>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span class="text-4xl font-black text-slate-800">450</span>
+                  <span class="text-sm font-bold text-slate-400">k</span>
+                </div>
+                <div class="text-xs font-semibold text-blue-600 mt-2">
+                  +1.2% vs ontem
+                </div>
+              </div>
+
+              <!-- Total de SKUs -->
+              <div class="p-6 flex flex-col justify-center relative group hover:bg-indigo-50/50 transition-colors">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><i data-lucide="tags" class="w-4 h-4"></i></div>
+                  <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Total de SKUs</span>
+                </div>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span class="text-4xl font-black text-slate-800">${estoqueData.produtos.skus.toLocaleString('pt-BR')}</span>
+                </div>
+                <div class="text-xs font-semibold text-blue-600 mt-2">
+                  +5 vs ontem
+                </div>
+              </div>
+
+            </div>
           </div>
-          
-          <!-- KPIs Superiores -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            ${KpiCard({ title: 'Total de Endereços', value: (e.total/1000).toFixed(1), unit: 'k', icon: 'layout-grid', trend: 'none', trendValue: 'Capacidade Máxima', theme: 'indigo' })}
-            ${KpiCard({ title: 'Taxa de Ocupação', value: pctOcupados, unit: '%', icon: 'pie-chart', trend: 'up', trendValue: '+2% vs mês ant.', theme: pctOcupados > 85 ? 'red' : 'blue' })}
-            ${KpiCard({ title: 'Endereços Bloqueados', value: e.bloqueados, unit: 'locais', icon: 'lock', trend: 'down', trendValue: 'Inventário rotativo', alert: e.bloqueados > 1000, theme: 'red' })}
-            ${KpiCard({ title: 'Capacidade Livre', value: (e.disponiveis/1000).toFixed(1), unit: 'k', icon: 'box-select', trend: 'down', trendValue: 'Atenção reposição', theme: 'green' })}
+
+          <!-- NOVO: Distribuição por Perfil de Contaminação -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8 flex flex-col">
+            <div class="flex items-center mb-6">
+              <div>
+                <h3 class="font-bold text-xl text-slate-800 leading-tight">Status por Perfil de Armazenagem</h3>
+                <p class="text-sm text-slate-500">Distribuição dos ${totalTr.toLocaleString('pt-BR')} endereços baseada nas regras de contaminação cruzada.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Contaminante -->
+              <div class="bg-red-50/40 border border-red-100 rounded-xl p-6 flex flex-col relative overflow-hidden transition-colors hover:bg-red-50/80">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
+                <div class="pl-2 flex flex-col h-full justify-between">
+                  <div class="mb-6">
+                    <h4 class="font-bold text-slate-800 text-lg">Contaminante</h4>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Químicos / Limpeza</p>
+                  </div>
+                  <div class="flex items-end justify-between border-t border-red-200/50 pt-4">
+                    <div class="flex flex-col">
+                      <span class="text-3xl font-black text-red-700 leading-none">${tr.contaminante.toLocaleString('pt-BR')}</span>
+                      <span class="text-[9px] font-bold text-red-500/70 uppercase tracking-widest mt-1">Endereços</span>
+                    </div>
+                    <span class="text-xl font-black text-red-600">${pctContaminante}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contaminável -->
+              <div class="bg-amber-50/40 border border-amber-100 rounded-xl p-6 flex flex-col relative overflow-hidden transition-colors hover:bg-amber-50/80">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-amber-400"></div>
+                <div class="pl-2 flex flex-col h-full justify-between">
+                  <div class="mb-6">
+                    <h4 class="font-bold text-slate-800 text-lg">Contaminável</h4>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Alimentos / Sensíveis</p>
+                  </div>
+                  <div class="flex items-end justify-between border-t border-amber-200/50 pt-4">
+                    <div class="flex flex-col">
+                      <span class="text-3xl font-black text-amber-600 leading-none">${tr.contaminavel.toLocaleString('pt-BR')}</span>
+                      <span class="text-[9px] font-bold text-amber-500/70 uppercase tracking-widest mt-1">Endereços</span>
+                    </div>
+                    <span class="text-xl font-black text-amber-600">${pctContaminavel}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Neutro -->
+              <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-6 flex flex-col relative overflow-hidden transition-colors hover:bg-blue-50/80">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
+                <div class="pl-2 flex flex-col h-full justify-between">
+                  <div class="mb-6">
+                    <h4 class="font-bold text-slate-800 text-lg">Neutro</h4>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Uso Geral / Embalagens</p>
+                  </div>
+                  <div class="flex items-end justify-between border-t border-blue-200/50 pt-4">
+                    <div class="flex flex-col">
+                      <span class="text-3xl font-black text-blue-700 leading-none">${tr.neutro.toLocaleString('pt-BR')}</span>
+                      <span class="text-[9px] font-bold text-blue-500/70 uppercase tracking-widest mt-1">Endereços</span>
+                    </div>
+                    <span class="text-xl font-black text-blue-600">${pctNeutro}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Barra Segmentada de Status dos Endereços -->
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8 flex flex-col">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="p-2 bg-slate-100 text-slate-600 rounded-lg shadow-sm"><i data-lucide="layers" class="w-5 h-5"></i></div>
+            <div class="flex items-center mb-6">
               <div>
-                <h3 class="font-bold text-xl text-slate-800 leading-tight">Distribuição de Status Físico</h3>
+                <h3 class="font-bold text-xl text-slate-800 leading-tight">Status de Ocupação Geral</h3>
                 <p class="text-sm text-slate-500">Visão consolidada de como os ${e.total.toLocaleString('pt-BR')} endereços estão distribuídos neste momento.</p>
               </div>
             </div>
@@ -856,30 +998,42 @@
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                  <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-blue-100 hover:bg-blue-50/50 transition-all">
                    <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-blue-600 shadow-sm"></div> Ocupados</span>
-                   <div class="flex items-baseline gap-1.5">
+                   <div class="flex items-baseline gap-1.5 mb-1">
                      <span class="text-slate-800 font-black text-2xl">${e.ocupados.toLocaleString('pt-BR')}</span>
                      <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                   <div class="text-xs font-semibold text-blue-600">
+                     +2.4% vs ontem
                    </div>
                  </div>
                  <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-amber-100 hover:bg-amber-50/50 transition-all">
                    <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-amber-400 shadow-sm"></div> Reservados (Inbound)</span>
-                   <div class="flex items-baseline gap-1.5">
+                   <div class="flex items-baseline gap-1.5 mb-1">
                      <span class="text-slate-800 font-black text-2xl">${e.reservados.toLocaleString('pt-BR')}</span>
                      <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                   <div class="text-xs font-semibold text-slate-500">
+                     -1.2% vs ontem
                    </div>
                  </div>
                  <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-red-100 hover:bg-red-50/50 transition-all">
                    <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-red-500 shadow-sm"></div> Bloqueados (Avaria/Inv.)</span>
-                   <div class="flex items-baseline gap-1.5">
+                   <div class="flex items-baseline gap-1.5 mb-1">
                      <span class="text-slate-800 font-black text-2xl">${e.bloqueados.toLocaleString('pt-BR')}</span>
                      <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                   <div class="text-xs font-semibold text-red-500">
+                     +0.5% vs ontem
                    </div>
                  </div>
                  <div class="flex flex-col p-4 rounded-xl border border-transparent hover:border-emerald-100 hover:bg-emerald-50/50 transition-all">
                    <span class="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-2 mb-2"><div class="w-3 h-3 rounded bg-emerald-400 shadow-sm"></div> Disponíveis (Vazios)</span>
-                   <div class="flex items-baseline gap-1.5">
+                   <div class="flex items-baseline gap-1.5 mb-1">
                      <span class="text-slate-800 font-black text-2xl">${e.disponiveis.toLocaleString('pt-BR')}</span>
                      <span class="text-xs text-slate-400 font-semibold">locais</span>
+                   </div>
+                   <div class="text-xs font-semibold text-amber-500">
+                     -1.7% vs ontem
                    </div>
                  </div>
               </div>
@@ -888,16 +1042,17 @@
 
           <!-- Ocupação por Rua -->
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 flex flex-col">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
               <div>
                 <h3 class="font-bold text-xl text-slate-800 mb-1">Status de Ocupação por Rua</h3>
                 <p class="text-sm text-slate-500">Mapeamento de capacidade detalhado por corredor de armazenagem.</p>
               </div>
-              <div class="flex gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Livre</span>
-                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Normal</span>
-                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div> Alto</span>
-                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-red-500"></div> Crítico/Lotado</span>
+              <div class="flex flex-wrap gap-3 xl:gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> 0-30% Livre</span>
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div> 31-50% Normal</span>
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div> 51-80% Alto</span>
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-purple-500"></div> 81-99% Crítico</span>
+                <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 rounded-full bg-red-500"></div> 100% Lotado</span>
               </div>
             </div>
 
@@ -905,17 +1060,46 @@
               ${estoqueData.ruas.map(rua => {
                 const bg = getOcupacaoColor(rua.ocupacao);
                 const txt = getOcupacaoTextColor(rua.ocupacao);
+                
+                // Cálculo das percentagens
+                const pctPulmao = rua.pulmao.total > 0 ? Math.round((rua.pulmao.ocupados / rua.pulmao.total) * 100) : 0;
+                const pctApanha = rua.apanha.total > 0 ? Math.round((rua.apanha.ocupados / rua.apanha.total) * 100) : 0;
+
                 return `
-                  <div class="border border-slate-200 rounded-xl p-4 flex flex-col bg-slate-50/50 hover:bg-white hover:shadow-md transition-all cursor-default">
-                    <div class="flex justify-between items-start mb-4">
-                      <div class="flex flex-col">
-                        <span class="text-sm font-black text-slate-800 uppercase tracking-tight">Rua ${rua.id}</span>
-                        <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">${rua.tipo}</span>
+                  <div class="border border-slate-200 rounded-xl p-4 flex flex-col bg-white hover:shadow-md transition-all cursor-default relative overflow-hidden shadow-sm">
+                    <!-- Linha lateral de status (substitui a barra de progresso) -->
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${bg}"></div>
+                    
+                    <div class="flex justify-between items-center mb-4 pl-1.5">
+                      <span class="text-base font-black text-slate-800 uppercase tracking-tight">Rua ${rua.id}</span>
+                      <div class="px-2 py-0.5 rounded-md bg-slate-50 border border-slate-100 flex items-center shadow-sm">
+                        <span class="text-lg font-black ${txt}">${rua.ocupacao}%</span>
                       </div>
-                      <span class="text-lg font-black ${txt}">${rua.ocupacao}%</span>
                     </div>
-                    <div class="w-full bg-slate-200 rounded-full h-2 mt-auto overflow-hidden shadow-inner">
-                      <div class="${bg} h-full rounded-full transition-all duration-1000" style="width: ${rua.ocupacao}%"></div>
+                    
+                    <div class="pl-1.5 flex flex-col gap-3">
+                      <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                        <div class="flex flex-col">
+                          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Total Ocupado</span>
+                          <span class="text-sm font-bold text-slate-700">${rua.ocupados} <span class="text-[10px] text-slate-400 font-medium">/ ${rua.total}</span></span>
+                        </div>
+                        <div class="p-1.5 bg-slate-50 rounded text-slate-400 border border-slate-100">
+                          <i data-lucide="package" class="w-3.5 h-3.5"></i>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2">
+                         <div class="flex flex-col">
+                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider mb-1">Pulmão</span>
+                            <span class="text-sm font-bold text-slate-700 leading-none">${pctPulmao}%</span>
+                            <span class="text-[9px] text-slate-500 font-medium mt-1" title="Ocupados / Total">(${rua.pulmao.ocupados}/${rua.pulmao.total})</span>
+                         </div>
+                         <div class="flex flex-col border-l border-slate-100 pl-2">
+                            <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider mb-1">Apanha</span>
+                            <span class="text-sm font-bold text-slate-700 leading-none">${pctApanha}%</span>
+                            <span class="text-[9px] text-slate-500 font-medium mt-1" title="Ocupados / Total">(${rua.apanha.ocupados}/${rua.apanha.total})</span>
+                         </div>
+                      </div>
                     </div>
                   </div>
                 `;
@@ -1094,7 +1278,6 @@
                     <span class="text-[10px] font-bold ${((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100) > 50 ? 'text-white' : 'text-slate-600'}">${Math.round((recebimentoData.paletes.emTransito / recebimentoData.paletes.conferidos) * 100)}%</span>
                   </div>
                 </div>
-                ${recebimentoData.paletes.emTransito > 30 ? '<div class="absolute -bottom-6 left-0 text-[10px] font-bold text-red-500 flex items-center gap-1 animate-pulse"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerta de Estangamento de Pátio</div>' : ''}
               </div>
               <!-- Item 3 -->
               <div class="flex flex-col">
@@ -2003,7 +2186,7 @@
 
     const menuItemsConfig = [
       { id: 'dashboard', label: 'Visão Geral', icon: 'layout-dashboard', render: renderVisaoGeral },
-      { id: 'estoque', label: 'Estoque', icon: 'boxes', render: renderEstoque },
+      { id: 'estoque', label: 'Estoque e Endereços', icon: 'boxes', render: renderEstoque },
       { id: 'recebimento', label: 'Recebimento', icon: 'arrow-down-to-line', render: renderRecebimento },
       { id: 'separacao', label: 'Separação', icon: 'shopping-cart', render: renderSeparacao },
       { id: 'expedicao', label: 'Expedição', icon: 'truck', render: renderExpedicao },
